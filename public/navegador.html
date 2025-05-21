@@ -1,0 +1,29 @@
+<template>
+  <!-- Contenido de tu navegador -->
+  <nav>
+    <a href="#init">Inicio</a>
+    <a href="#contact">Contacto</a>
+  </nav>
+
+  <button onclick="mensaje(event)">Mostrar Mensaje</button>
+</template>
+
+<script>
+  function mensaje(e) {
+    if (e.target.innerText == "Mostrar Mensaje") {
+      e.target.innerText = "Ocultar";
+      changeById(
+        "./html/components/generals/Titulo.html",
+        "navegador-container",
+        { Title: "Esto es un titulo de prueba" }
+      );
+    } else {
+      e.target.innerText = "Mostrar Mensaje";
+      changeById(
+        "./html/components/generals/Titulo.html",
+        "navegador-container",
+        { Title: "Sin Titulo" }
+      );
+    }
+  }
+</script>

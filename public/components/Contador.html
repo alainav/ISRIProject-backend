@@ -1,0 +1,13 @@
+<template>
+  <div class="contador">
+    <h3>Contador: {{count}}</h3>
+    <button onclick="handleIncrement()">➕ Incrementar</button>
+  </div>
+</template>
+
+<script>
+  window.handleIncrement = () => {
+    State.count++;
+    console.log("Contador actualizado:", State.count);
+  };
+</script>
