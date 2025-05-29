@@ -1,4 +1,4 @@
-import Server from "./src/server";
+import Server from "./server.js";
 
 const server = new Server();
 server.listen();

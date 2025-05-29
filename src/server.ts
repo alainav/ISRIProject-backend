@@ -8,6 +8,7 @@ import path from "path";
 import { __dirname } from "./utils/utils.js";
 
 dotenv.config();
+const clientBuildPath = path.join(__dirname, "../client/build");
 
 class Server {
   app: Express;
@@ -50,11 +51,11 @@ class Server {
   middlewares(): void {
     this.app.use(cors());
     this.app.use(express.json());
-    this.app.use(express.static("./public/client/build"));
+    this.app.use(express.static(clientBuildPath));
 
     // Manejar rutas de React
     this.app.get("*", (req: Request, res: Response) => {
-      res.sendFile(path.join(__dirname, "./public/client/build", "index.html"));
+      res.sendFile(path.join(clientBuildPath, "index.html"));
     });
 
     // Error handling middleware
