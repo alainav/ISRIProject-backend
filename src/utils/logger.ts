@@ -1,13 +1,13 @@
-// 📁 utils/logger.js
 import fs from "fs/promises";
 import * as generalFs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
-import { __dirname, getFechaCubaText, getHoraCubaText } from "./utils.js";
-import { consoleConnection } from "./utils.js";
-import { notificarError } from "../helpers/index.js";
+import {
+  consoleConnection,
+  getFechaCubaText,
+  getHoraCubaText,
+} from "./utils.js";
 
-// Configuración de transporte (usando el existente de enviar-email.js)
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -16,37 +16,38 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Ruta del log único
 const LOG_FILE = path.join(__dirname, "applicationLogs.log");
 let isProcessing = false;
 
-// Función modificada que mantiene formato y añade logging
-const consoleLog = async (message, color = "white", userId) => {
-  // Llamar a la implementación original
-  const tag = consoleConnection(message, color, userId);
-
-  // Escribir en archivo sin formato
+export const consoleLog = async (
+  message: string,
+  color: string = "white",
+  identity?: string
+) => {
+  const tag = consoleConnection(message, color, identity);
   const logEntry = `[${tag}] ${message}\n`;
 
   try {
     await fs.appendFile(LOG_FILE, logEntry);
   } catch (error) {
-    consoleConnection(`❌ Error escribiendo en log: ${error}`, "red", userId);
+    consoleConnection(`❌ Error escribiendo en log: ${error}`, "red", identity);
   }
 };
 
-export const consoleError = (userId, error, message, color = "red") => {
-  consoleLog(`❌ ${message}\nError: ${error}`, color, userId);
-  if (userId && userId !== null && userId !== undefined) {
-    notificarError(userId, error, message);
-  }
+export const consoleError = (
+  identity: string | undefined,
+  error: unknown,
+  message: string,
+  color: string = "red"
+) => {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  consoleLog(`❌ ${message}\nError: ${errorMessage}`, color, identity);
 };
 
-// Programar tareas diarias
 const scheduleLogTasks = () => {
   const now = new Date();
   const target = new Date(now);
-  target.setHours(6, 0, 0, 0); // 12:00 AM Hora Cuba
+  target.setHours(6, 0, 0, 0);
 
   if (now > target) target.setDate(target.getDate() + 1);
 
@@ -57,14 +58,12 @@ const scheduleLogTasks = () => {
       isProcessing = false;
     }
     scheduleLogTasks();
-  }, target - now);
+  }, target.getTime() - now.getTime());
 };
 
-// Enviar y rotar logs
 const sendAndRotateLogs = async () => {
   try {
-    // Enviar log actual
-    const logContent = await fs.readFile(LOG_FILE);
+    const logContent = await fs.readFile(LOG_FILE, "utf8");
 
     await transporter.sendMail({
       from: "verificacionaplicaciones@gmail.com",
@@ -87,48 +86,37 @@ const sendAndRotateLogs = async () => {
 
     console.log("✅ Logs Enviados");
 
-    // Rotar archivo
+    const logsDir = path.join(__dirname, "logs");
+    await fs.mkdir(logsDir, { recursive: true });
     const archiveName = `applicationLogs-${getFechaCubaText()}.log`;
-    await fs.rename(LOG_FILE, path.join(__dirname, "logs", archiveName));
+    await fs.rename(LOG_FILE, path.join(logsDir, archiveName));
     await fs.writeFile(LOG_FILE, "");
 
     consoleConnection("✅ Logs enviados y rotados", "green");
   } catch (error) {
-    consoleError(`❌ Error procesando logs: ${error}`, "red");
+    consoleError(undefined, error, "Error procesando logs", "red");
   }
 };
 
-// Inicialización
 (async () => {
   try {
-    // 1. Crear directorio de logs primero
     await fs.mkdir(path.join(__dirname, "logs"), { recursive: true });
 
-    // 2. Revisar si existe el archivo principal y si no Inicializar el mismo
     if (!generalFs.existsSync(LOG_FILE)) {
       await fs.writeFile(LOG_FILE, "");
     }
 
-    // 3. Mostrar mensaje usando console estándar primero
-    console.log("📁 Sistema de logs inicializado"); // Mensaje temporal
+    console.log("📁 Sistema de logs inicializado");
 
-    // 4. Programar tareas
     scheduleLogTasks();
 
-    const direccion = __dirname.includes("/")
-      ? __dirname.split(`/`)
-      : __dirname.split(`\\`);
-    // 5. Ahora usar la versión modificada
+    const direccion = __dirname.split(path.sep);
+    const displayDir = direccion.slice(-3).join(path.sep);
     consoleLog(
-      `📁 Sistema de logs inicializado en ${path.join(
-        direccion[3],
-        direccion[4],
-        direccion[5]
-      )} (${getFechaCubaText()} ${getHoraCubaText()})`,
+      `📁 Sistema de logs inicializado en ${displayDir} (${getFechaCubaText()} ${getHoraCubaText()})`,
       "purple"
     );
   } catch (error) {
-    // 6. Usar console nativo para errores de inicialización
     console.error("❌ Error crítico inicializando logs:", error);
     process.exit(1);
   }

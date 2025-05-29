@@ -1,15 +1,21 @@
-import express from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
-import http from "http";
-import { Server as SocketServer } from "socket.io";
+import http, { Server as HttpServer } from "http";
+import { Server as SocketServer, Socket } from "socket.io";
 import dotenv from "dotenv";
-import generalController from "./server/controllers/generalController.js";
-import { __dirname } from "./server/utils/utils.js";
+import generalController from "./server/controllers/generalController.js"; // Sin .js
 import path from "path";
+import { __dirname } from "./utils/utils.js";
 
 dotenv.config();
 
 class Server {
+  app: Express;
+  port: string | number;
+  paths: Record<string, string>;
+  server: HttpServer;
+  io: SocketServer;
+
   constructor() {
     this.app = express();
     this.port = process.env.PORT || 3001;
@@ -20,9 +26,9 @@ class Server {
         origin: "*",
         methods: ["GET", "POST"],
       },
-      pingTimeout: 5000, // 5 segundos
-      pingInterval: 10000, // 10 segundos
-      maxHttpBufferSize: 1e8, // 100MB
+      pingTimeout: 5000,
+      pingInterval: 10000,
+      maxHttpBufferSize: 1e8,
       perMessageDeflate: {
         threshold: 1024,
         zlibDeflateOptions: {
@@ -31,56 +37,50 @@ class Server {
       },
     });
 
-    //Conectar a la base de datos
     this.conectarDB();
-
-    //Middlewares -> Es cuando necesitamos alguna funcion dentro del server
     this.middlewares();
-
-    //Rutas de mi servidor
     this.routes();
-
-    //Sockets
     this.sockets();
   }
 
-  async conectarDB() {
-    //await dbConnection();
+  async conectarDB(): Promise<void> {
+    // await dbConnection();
   }
 
-  middlewares() {
-    //Configura quien accede y quien no al servidor
+  middlewares(): void {
     this.app.use(cors());
-
-    //Lectura y parseo del body
     this.app.use(express.json());
-
-    // Servir archivos estáticos de React
     this.app.use(express.static("./public/client/build"));
 
     // Manejar rutas de React
-    this.app.get("*", (req, res) => {
+    this.app.get("*", (req: Request, res: Response) => {
       res.sendFile(path.join(__dirname, "./public/client/build", "index.html"));
     });
+
+    // Error handling middleware
+    this.app.use(
+      (err: Error, req: Request, res: Response, next: NextFunction) => {
+        console.error(err.stack);
+        res.status(500).send("Error del servidor");
+      }
+    );
   }
 
-  routes() {
-    //this.app.use(this.paths.registro, routerRegistro);
+  routes(): void {
+    // this.app.use(this.paths.registro, routerRegistro);
   }
 
-  sockets() {
-    this.io.on("connection", (socket) => {
-      // Pasar tanto socket como io al controlador
+  sockets(): void {
+    this.io.on("connection", (socket: Socket) => {
       generalController(socket, this.io);
 
-      // Manejar reconexiones
-      socket.on("reconnect", (attemptNumber) => {
+      socket.on("reconnect", (attemptNumber: number) => {
         console.log(`♻ Reconexión #${attemptNumber} de ${socket.id}`);
       });
     });
   }
 
-  listen() {
+  listen(): void {
     this.server.listen(this.port, () => {
       console.log("Servidor corriendo en el puerto", this.port);
     });

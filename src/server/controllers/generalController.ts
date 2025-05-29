@@ -1,5 +1,4 @@
-import { modifyOnlineUsers, online, sockets, usersRooms } from "../onlines.js";
-import { generateRandomNumberExtended } from "../helpers/estandarizadores.js";
+import { Server, Socket } from "socket.io";
 import {
   authenticate,
   create_deputy,
@@ -37,35 +36,43 @@ import {
   execute_vote,
   show_monitor,
 } from "./votingController.js";
-import { minutesToMiliseconds } from "../../utils/utils.js";
+import CustomSocket from "../interfaces/CustomSocket.js";
+import ReassignIdentityData from "../interfaces/ReassignIdentityData.js";
+import PingData from "../interfaces/PingData.js";
 
-export class SocketsPersonalizados {
-  constructor(socket, io, identity) {
+import { minutesToMiliseconds } from "../../utils/utils.js";
+import { generateRandomNumberExtended } from "../helpers/estandarizadores.js";
+import { modifyOnlineUsers, online, sockets, usersRooms } from "../onlines.js";
+
+export class SocketsPersonalizados implements CustomSocket {
+  socket: Socket;
+  io: Server;
+  identity: string;
+  private disconnectTime: number | null = null;
+
+  constructor(socket: Socket, io: Server, identity: string) {
     this.socket = socket;
     this.io = io;
     this.identity = identity;
-    this.disconnectTime = null;
   }
 
-  setDisconnectTime(time) {
+  setDisconnectTime(time: number) {
     this.disconnectTime = time;
   }
 
-  getTimeDisconnected() {
+  get timeDisconnected(): number {
     return this.disconnectTime === null ? 0 : Date.now() - this.disconnectTime;
   }
 }
 
-/**
- * Relación de eventos con sus respectivas funciones
- */
-const EVENT_HANDLERS = {
-  //Eventos asociados a representantes y autenticación
+// Tipar los manejadores de eventos
+type EventHandler = (this: Socket, ...args: any[]) => void;
+const EVENT_HANDLERS: Record<string, EventHandler> = {
   authenticate,
   "create-deputy": create_deputy,
   "update-deputy": update_deputy,
   "delete-deputy": delete_deputy,
-  "list-all-deputies": list_all_deputies, //Muestra todos los representantes registrados sin importar el rol
+  "list-all-deputies": list_all_deputies,
   "activate-deputy": activate_deputy,
   "get-list-deputies": get_list_deputies,
   "get-list-commissions-presidents": get_list_commissions_presidents,
@@ -73,19 +80,16 @@ const EVENT_HANDLERS = {
   "get-list-general-presidents": get_list_general_presidents,
   "get-list-general-secretaries": get_list_general_secretaries,
 
-  //Eventos asociados a ediciones
   "create-edition": create_edition,
   "update-edition": update_edition,
   "delete-edition": delete_edition,
   "list-editions": list_editions,
 
-  //Eventos asociados a comisiones
   "create-commission": create_commission,
   "update-commission": update_commission,
   "delete-commission": delete_commission,
   "list-commissions": list_commissions,
 
-  //Eventos asociados a las votaciones
   "create-voting": create_voting,
   "update-voting": update_voting,
   "list-voting": list_voting,
@@ -95,39 +99,30 @@ const EVENT_HANDLERS = {
   "show-monitor": show_monitor,
 };
 
-/**
- * Arreglo con el nombre de eventos considerados sensibles
- */
-const sensibles = ["authenticate", "execute-vote"];
+const sensibles: string[] = ["authenticate", "execute-vote"];
 
-/**
- * Funcionalidad principal del controlador general
- * @param {*} socket Socket conectado
- * @param {*} io Referencia de todos los sockets conectados
- */
-const generalController = (socket, io) => {
+const generalController = (socket: Socket, io: Server): void => {
   let identity = assignIdentity(socket);
 
   modifyOnlineUsers("inc");
   console.log(`🟢 Nuevo usuario conectado: ${identity}`);
 
-  // Sincronizar rooms en caso de que ya posea alguna previamente
+  // Sincronizar rooms
   const existingRooms = usersRooms.get(identity);
   if (existingRooms) {
-    socket.rooms.forEach((room) => socket.leave(room));
+    Array.from(socket.rooms)
+      .filter((room) => room !== socket.id)
+      .forEach((room) => socket.leave(room));
+
     existingRooms.forEach((room) => socket.join(room));
   }
 
-  // Actualizar mapa de sockets
   sockets.set(identity, new SocketsPersonalizados(socket, io, identity));
-
-  // Actualizar cantidad de usuarios en linea
   io.emit("online-count", online);
 
-  // Asignar los eventos a los nombres correspondientes
+  // Registrar eventos
   Object.entries(EVENT_HANDLERS).forEach(([eventName, handler]) => {
-    socket.on(eventName, (...args) => {
-      // Dentro del handler del evento
+    socket.on(eventName, (...args: any[]) => {
       if (sensibles.includes(eventName)) {
         console.log(
           `🔒 Evento sensible [${eventName}] - Usuario: ${identity}${
@@ -140,70 +135,48 @@ const generalController = (socket, io) => {
         );
       }
 
-      // Ejecutar el evento original con contexto y argumentos
       try {
         handler.call(socket, ...args);
-      } catch (error) {
+      } catch (error: any) {
         console.log(`Error en evento ${eventName}: ${error.message}`);
         socket.emit("error", `Error procesando ${eventName}`);
       }
     });
   });
 
-  // ⚡ Eliminar sockets y disponibilizarlos (30 segundos)
-  let inactivityTimeout = setInterval(() => {
+  // Limpieza de sockets inactivos
+  const inactivityInterval = setInterval(() => {
     sockets.forEach((socketObj, key) => {
-      if (socketObj.getTimeDisconnected() > 300000) {
+      if (socketObj.timeDisconnected > 300000) {
         sockets.delete(key);
         usersRooms.delete(key);
-
-        console.log(
-          `⌛ Eliminado socket ${socket.id} y liberando ID (${key}) por inactividad`
-        );
+        console.log(`⌛ Eliminado socket ${key} por inactividad`);
       }
     });
   }, minutesToMiliseconds(5));
 
-  // Sección de eventos para probar el servidor socket.io
-  socket.on("ping", (rawData) => {
-    //clearTimeout(inactivityTimeout); // Limpiar el anterior
-    let inactivityTimeout = setTimeout(() => {
-      console.log(`⌛ Cerrando socket ${socket.id} por inactividad`);
-      socket.disconnect(true);
-    }, 15000);
-
-    const start = Date.now();
-    let data;
-
+  // Evento ping
+  socket.on("ping", (rawData: string) => {
+    let data: PingData;
     try {
-      data = JSON.parse(rawData); // Parsear datos entrantes
+      data = JSON.parse(rawData);
     } catch (e) {
       return socket.emit("error", "Formato inválido");
     }
-
-    // Respuesta mejorada
-    const respuesta = JSON.stringify({
-      type: "pong",
-      originalTimestamp: data.timestamp,
-      serverTimestamp: Date.now(),
-      latency: Date.now() - data.timestamp,
-    });
 
     socket.emit(
       "pong",
       JSON.stringify({
         type: "pong",
-        payload: "a".repeat(Math.floor(Math.random() * 10240)), // 0-10 KB
+        payload: "a".repeat(Math.floor(Math.random() * 10240)),
         latency: Date.now() - data.timestamp,
       })
     );
   });
 
   // Eventos especiales
-  socket.on("reassign-identity", (newId) => {
-    console.log(
-      `🎮 Evento [reassign-identity] activado por usuario: ${identity}`
-    );
+  socket.on("reassign-identity", (newId: ReassignIdentityData) => {
+    console.log(`🎮 [reassign-identity] por: ${identity}`);
     sockets.delete(identity);
     usersRooms.delete(identity);
     socket.handshake.query.identity = newId.identity;
@@ -212,36 +185,36 @@ const generalController = (socket, io) => {
       newIdentity,
       new SocketsPersonalizados(socket, io, newIdentity)
     );
-    console.log(`🔄 Cliente ${identity} cambió a ${newIdentity}`);
+    console.log(`🔄 ${identity} → ${newIdentity}`);
     identity = newIdentity;
   });
 
   socket.on("my-identity", () => {
-    console.log(`🎮 Evento [my-identity] activado por usuario: ${identity}`);
     socket.emit("your-identity", identity);
   });
 
   socket.on("disconnecting", () => {
-    if (!usersRooms.has(identity)) {
-      // Actualizar directamente el Map usersRooms
-      usersRooms.set(identity, Array.from(socket.rooms));
+    const rooms = Array.from(socket.rooms).filter((room) => room !== socket.id);
+    if (rooms.length > 0) {
+      usersRooms.set(identity, rooms);
     }
-    sockets.get(identity)?.setDisconnectTime(Date.now());
+    sockets
+      .get(identity)
+      ?.setDisconnectTime(Number.parseInt(Date.now().toFixed(2)));
   });
 
   socket.on("disconnect", () => {
-    //clearTimeout(inactivityTimeout);
     modifyOnlineUsers("dec");
     io.emit("online-count", online);
-    console.log(`🔴 Cliente desconectado: ${identity}`);
+    console.log(`🔴 Desconectado: ${identity}`);
+    clearInterval(inactivityInterval);
   });
 
   socket.on("close", () => {
-    console.log(`🎮 Evento [close] activado por usuario: ${identity}`);
-    console.log(`🚪 Cliente ${identity} abandona el servicio`, identity);
     sockets.get(identity)?.socket?.disconnect();
     sockets.delete(identity);
     usersRooms.delete(identity);
+    clearInterval(inactivityInterval);
   });
 
   socket.on("online-count", () => {
@@ -249,15 +222,13 @@ const generalController = (socket, io) => {
   });
 };
 
-/**
- * Función para asignar identity a Socket específico
- * @param {*} socket Socket actual conectado
- * @returns {number} Identificador asociado al socket enviado
- */
-const assignIdentity = (socket) => {
+const assignIdentity = (socket: Socket): string => {
   if (!socket) return "null";
 
-  let identity = socket.handshake.query.identity;
+  let identity = Array.isArray(socket.handshake.query.identity)
+    ? socket.handshake.query.identity[0]
+    : socket.handshake.query.identity || "null";
+
   const address = socket.handshake.address;
 
   if (!identity || identity === "null") {
@@ -271,7 +242,7 @@ const assignIdentity = (socket) => {
       }
     } while (
       sockets.has(identity) &&
-      sockets.get(identity).socket.handshake.address !== address
+      sockets.get(identity)?.socket.handshake.address !== address
     );
   }
 
@@ -279,11 +250,7 @@ const assignIdentity = (socket) => {
   return identity;
 };
 
-/**
- * Permite obtener el socket asociado a una identificación específica
- * @param {number} identity Identificador del socket a buscar
- * @returns {SocketsPersonalizados} Devuelve el Socket y io asociados al identificador
- */
-export const getSockets = (identity) => sockets.get(identity);
+export const getSockets = (identity: string): CustomSocket | undefined =>
+  sockets.get(identity);
 
 export default generalController;
