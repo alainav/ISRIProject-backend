@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import generalController from "./server/controllers/generalController.js"; // Sin .js
 import path from "path";
 import { __dirname } from "./utils/utils.js";
+import { connectDB } from "./model/src/config/databaseConection.js";
+import { createRoutes } from "./model/src/routes/index.js";
 
 dotenv.config();
 const clientBuildPath = path.join(__dirname, "../client/build");
@@ -13,14 +15,12 @@ const clientBuildPath = path.join(__dirname, "../client/build");
 class Server {
   app: Express;
   port: string | number;
-  paths: Record<string, string>;
   server: HttpServer;
   io: SocketServer;
 
   constructor() {
     this.app = express();
     this.port = process.env.PORT || 3001;
-    this.paths = {};
     this.server = http.createServer(this.app);
     this.io = new SocketServer(this.server, {
       cors: {
@@ -45,7 +45,7 @@ class Server {
   }
 
   async conectarDB(): Promise<void> {
-    // await dbConnection();
+    await connectDB();
   }
 
   middlewares(): void {
@@ -69,6 +69,8 @@ class Server {
 
   routes(): void {
     // this.app.use(this.paths.registro, routerRegistro);
+    const routes = createRoutes();
+    this.app.use("/api", routes);
   }
 
   sockets(): void {
