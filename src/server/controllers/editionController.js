@@ -1,7 +1,6 @@
-import Data from "../utils/Data.js";
-import { requestAPI } from "../utils/API.js";
+import Data from "../../utils/Data.js";
 
-export const create_commission = async (data, callback) => {
+export const create_edition = async (data, callback) => {
   const { identity, ...body } = data;
   try {
     const sendData = new Data(
@@ -24,7 +23,7 @@ export const create_commission = async (data, callback) => {
   }
 };
 
-export const update_commission = async (data, callback) => {
+export const update_edition = async (data, callback) => {
   const { identity } = data;
   try {
     const sendData = new Data(
@@ -47,7 +46,7 @@ export const update_commission = async (data, callback) => {
   }
 };
 
-export const delete_commission = async (data, callback) => {
+export const delete_edition = async (data, callback) => {
   const { identity } = data;
   try {
     const sendData = new Data(
@@ -70,7 +69,7 @@ export const delete_commission = async (data, callback) => {
   }
 };
 
-export const list_commissions = async (data, callback) => {
+export const list_editions = async (data, callback) => {
   const { identity } = data;
   try {
     const sendData = new Data(

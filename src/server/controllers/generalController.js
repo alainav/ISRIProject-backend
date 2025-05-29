@@ -5,11 +5,13 @@ import {
   create_deputy,
   update_deputy,
   delete_deputy,
-  list_deputies,
+  list_all_deputies,
   activate_deputy,
   get_list_deputies,
   get_list_commissions_presidents,
   get_list_commissions_secretaries,
+  get_list_general_presidents,
+  get_list_general_secretaries,
 } from "./deputyController.js";
 
 import {
@@ -35,6 +37,7 @@ import {
   execute_vote,
   show_monitor,
 } from "./votingController.js";
+import { minutesToMiliseconds } from "../../utils/utils.js";
 
 export class SocketsPersonalizados {
   constructor(socket, io, identity) {
@@ -62,11 +65,13 @@ const EVENT_HANDLERS = {
   "create-deputy": create_deputy,
   "update-deputy": update_deputy,
   "delete-deputy": delete_deputy,
-  "list-deputies": list_deputies, //Muestra todos los representantes registrados sin importal el rol
+  "list-all-deputies": list_all_deputies, //Muestra todos los representantes registrados sin importar el rol
   "activate-deputy": activate_deputy,
   "get-list-deputies": get_list_deputies,
   "get-list-commissions-presidents": get_list_commissions_presidents,
   "get-list-commissions-secretaries": get_list_commissions_secretaries,
+  "get-list-general-presidents": get_list_general_presidents,
+  "get-list-general-secretaries": get_list_general_secretaries,
 
   //Eventos asociados a ediciones
   "create-edition": create_edition,

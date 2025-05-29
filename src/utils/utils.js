@@ -1,8 +1,8 @@
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
-import { online } from "../../onlines.js";
-import { obtenerSocketsPorUsuario } from "../controllers/controller.js";
+import { online } from "../server/onlines.js";
+import { getSockets } from "../server/controllers/generalController.js";
 import moment from "moment-timezone";
 
 export const PRIVATEKEY = `MyPubl1cK3yS3cr3t${new Date().getDate()}k3yS3c4r1ty`;
@@ -81,14 +81,8 @@ export const consoleConnection = (message, color = "white", userId) => {
 
   console.log(`${colors[color]}%s\x1b[0m`, border);
   let tag = `${getFechaCubaText()} ${getHoraCubaText()}`;
-  if (
-    userId &&
-    userId !== null &&
-    userId !== undefined &&
-    obtenerSocketsPorUsuario(userId)
-  ) {
-    const address =
-      obtenerSocketsPorUsuario(userId).socketActual?.handshake.address;
+  if (userId && userId !== null && userId !== undefined && getSockets(userId)) {
+    const address = getSockets(userId).socketActual?.handshake.address;
     tag = `${tag} ${address}`;
   }
   console.log(`${colors[color]}%s\x1b[0m`, `* ${tag.padEnd(sizeBorder - 4)} *`);

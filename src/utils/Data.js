@@ -1,4 +1,4 @@
-import { getSockets } from "../controllers/generalController.js";
+import { getSockets } from "../server/controllers/generalController.js";
 //Clase que permite construir un objeto data en cualquier parte de la aplicación
 //Siempre va ubicado en el try catch
 export default class Data {

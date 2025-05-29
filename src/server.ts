@@ -4,13 +4,15 @@ import http from "http";
 import { Server as SocketServer } from "socket.io";
 import dotenv from "dotenv";
 import generalController from "./server/controllers/generalController.js";
+import { __dirname } from "./server/utils/utils.js";
+import path from "path";
 
 dotenv.config();
 
 class Server {
   constructor() {
     this.app = express();
-    this.port = process.env.PORT || 3000;
+    this.port = process.env.PORT || 3001;
     this.paths = {};
     this.server = http.createServer(this.app);
     this.io = new SocketServer(this.server, {
@@ -53,8 +55,13 @@ class Server {
     //Lectura y parseo del body
     this.app.use(express.json());
 
-    //Directorio publico
-    this.app.use(express.static("public"));
+    // Servir archivos estáticos de React
+    this.app.use(express.static("./public/client/build"));
+
+    // Manejar rutas de React
+    this.app.get("*", (req, res) => {
+      res.sendFile(path.join(__dirname, "./public/client/build", "index.html"));
+    });
   }
 
   routes() {
