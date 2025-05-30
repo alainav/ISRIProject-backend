@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 import generalController from "./server/controllers/generalController.js"; // Sin .js
 import path from "path";
 import { __dirname } from "./utils/utils.js";
-import { connectDB } from "./model/src/config/databaseConection.js";
+import { dbConnection } from "./model/src/config/databaseConection.js";
 import { createRoutes } from "./model/src/routes/index.js";
 
 dotenv.config();
@@ -45,7 +45,7 @@ class Server {
   }
 
   async conectarDB(): Promise<void> {
-    await connectDB();
+    await dbConnection();
   }
 
   middlewares(): void {

@@ -1,34 +1,64 @@
-import { Entity, PrimaryGeneratedColumn, Column , BaseEntity ,ManyToOne ,OneToOne } from "typeorm";
-import { IsBoolean } from "class-validator";
-import { Votacion } from "./Votacion.js";
-import { Representante } from "./Representante.js";
-import { Pais } from "./Pais.js";
+import {
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  Model,
+} from "sequelize";
+import { sequelize } from "../config/databaseConection.js";
+import Votacion from "./Votacion.js";
 
-@Entity()
-export class Voto extends BaseEntity{
-
-    @PrimaryGeneratedColumn({ type: 'int' })
-    id_voto!: number;
-
-    @Column({ type: 'boolean', default: false })
-    @IsBoolean()
-    a_favor!: boolean;
-    
-    @Column({ type: 'boolean', default: false })
-    @IsBoolean()
-    en_contra!: boolean;
-    
-    @Column({ type: 'boolean', default: false })
-    @IsBoolean()
-    abstencion!: boolean;
-
-    // Relaciones
-    @ManyToOne(() => Votacion, votacion => votacion.votos)
-    votacion!: Votacion;
-
-    @ManyToOne(() => Representante, representante => representante.votos)
-    representante!: Representante;
-
-    @OneToOne(() => Pais, pais => pais.voto)
-    pais!: Pais;
+class Voto extends Model<InferAttributes<Voto>, InferCreationAttributes<Voto>> {
+  "id_voto": number;
+  "a_favor": boolean;
+  "en_contra": boolean;
+  "abstencion": boolean;
+  "id_votacion": number;
+  "id_pais": number;
 }
+
+Voto.init(
+  {
+    id_voto: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    a_favor: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    en_contra: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    abstencion: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    id_votacion: {
+      type: DataTypes.INTEGER,
+      unique: true,
+    },
+    id_pais: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+  },
+  {
+    sequelize,
+    modelName: "Votos",
+    tableName: "votos",
+    timestamps: false,
+  }
+);
+
+Voto.belongsTo(Votacion, { foreignKey: "id_votacion", onDelete: "CASCADE" });
+Votacion.hasMany(Voto, {
+  foreignKey: "id_votacion",
+  onDelete: "CASCADE",
+});
+
+export default Voto;

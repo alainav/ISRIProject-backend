@@ -1,77 +1,116 @@
 import {
-  Entity,
-  PrimaryColumn,
-  Column,
-  BaseEntity,
-  ManyToOne,
-  OneToOne,
-  OneToMany,
-  BeforeInsert,
-} from "typeorm";
-import {
-  IsEmail,
-  Length,
-  IsDate,
-  IsBoolean,
-  IsNotEmpty,
-} from "class-validator";
-import { Rol } from "./Rol.js";
-import { Comision } from "./Comision.js";
-import { Voto } from "./Voto.js";
-import { Pais } from "./Pais.js";
+  Model,
+  DataTypes,
+  Optional,
+  InferAttributes,
+  InferCreationAttributes,
+} from "sequelize";
+import { sequelize } from "../config/databaseConection.js";
 
-@Entity()
-export class Representante extends BaseEntity {
-  @PrimaryColumn({ type: "varchar", length: 100 })
-  @IsEmail({}, { message: "Debe ser un correo electrónico válido" })
-  correo!: string;
-
-  @Column({ type: "varchar", length: 50, unique: true })
-  @Length(5, 50, { message: "El usuario debe tener entre 5 y 50 caracteres" })
-  usuario!: string;
-
-  @Column({ type: "varchar", length: 50 })
-  @IsNotEmpty({ message: "El primer nombre es obligatorio" })
-  p_nombre!: string;
-
-  @Column({ type: "varchar", length: 50, nullable: true })
-  s_nombre!: string | null;
-
-  @Column({ type: "varchar", length: 50 })
-  @IsNotEmpty({ message: "El primer apellido es obligatorio" })
-  p_apellido!: string;
-
-  @Column({ type: "varchar", length: 50, nullable: true })
-  s_apellido!: string | null;
-
-  @Column({ type: "varchar", length: 100 })
-  @Length(8, 100, { message: "La clave debe tener mínimo 8 caracteres" })
-  c_acceso!: number;
-
-  @Column({ type: "date" })
-  @IsDate()
-  f_registro!: Date;
-
-  @Column({ type: "date" })
-  @IsDate()
-  f_expiracion!: Date;
-
-  @Column({ type: "boolean", default: true })
-  @IsBoolean()
-  estado!: boolean;
-
-  // Relaciones
-  @ManyToOne(() => Rol, (rol) => rol.representantes)
-  rol!: Rol;
-
-  @ManyToOne(() => Comision, (comision) => comision.representantes, {
-    nullable: true,
-  })
-  comision?: Comision;
-
-  @OneToOne(() => Pais, (pais) => pais.representante)
-  pais!: Pais;
-
-  @OneToMany(() => Voto, (voto) => voto.representante)
-  votos!: Voto[];
+class Representante extends Model<
+  InferAttributes<Representante>,
+  InferCreationAttributes<Representante>
+> {
+  "correo": string;
+  "usuario": string;
+  "p_nombre": string;
+  "s_nombre": string | null;
+  "p_apellido": string;
+  "s_apellido": string;
+  "c_acceso": number;
+  "f_registro": Date;
+  "f_expiracion": Date;
+  "estado": boolean;
+  "id_rol": number;
+  "id_comision": number | null;
+  "id_pais": number;
 }
+
+Representante.init(
+  {
+    correo: {
+      type: DataTypes.STRING(100),
+      primaryKey: true,
+      allowNull: false,
+      validate: {
+        isEmail: { msg: "Debe ser un correo electrónico válido" },
+      },
+    },
+    usuario: {
+      type: DataTypes.STRING(50),
+      unique: true,
+      allowNull: false,
+      validate: {
+        len: {
+          args: [5, 50],
+          msg: "El usuario debe tener entre 5 y 50 caracteres",
+        },
+      },
+    },
+    p_nombre: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      validate: {
+        notEmpty: { msg: "El primer nombre es obligatorio" },
+      },
+    },
+    s_nombre: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+    p_apellido: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      validate: {
+        notEmpty: { msg: "El primer apellido es obligatorio" },
+      },
+    },
+    s_apellido: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    c_acceso: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      validate: {
+        len: {
+          args: [8, 100],
+          msg: "La clave debe tener mínimo 8 caracteres",
+        },
+      },
+    },
+    f_registro: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    f_expiracion: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    estado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      allowNull: false,
+    },
+    id_rol: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    id_comision: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    id_pais: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+  },
+  {
+    sequelize,
+    modelName: "Representante",
+    tableName: "representantes",
+    timestamps: false,
+  }
+);
+
+export default Representante;

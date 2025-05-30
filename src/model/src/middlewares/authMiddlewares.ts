@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { Representante } from "../models/Representante.js";
+import Representante from "../models/Representante.js";
 
 const verifyCorreoUnique = async (
   req: Request,

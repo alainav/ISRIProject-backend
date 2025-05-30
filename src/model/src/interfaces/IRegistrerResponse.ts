@@ -7,10 +7,10 @@ export interface IRegistrerResponse extends IGeneralResponse {
   second_name?: string;
   first_surname: string;
   second_surname: string;
-  role: number;
-  country: number;
+  role: string;
+  country: string;
   code_access: number;
-  date_registre: Date | null;
+  date_register: Date | null;
   date_expired: Date | null;
   status: boolean;
 }

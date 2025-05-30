@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import { __dirname } from "../../../utils/utils.js";
 
 dotenv.config({
-  path: path.resolve(__dirname, ".env"),
+  path: path.resolve(__dirname, "../.env"),
 });
 
 // Verificar que las variables requeridas estén definidas

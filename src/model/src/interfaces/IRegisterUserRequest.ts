@@ -7,4 +7,5 @@ export interface IRegisterUserRequest {
   second_surname: string;
   role: number;
   country: number;
+  commission: number | null;
 }

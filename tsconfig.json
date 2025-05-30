@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "moduleResolution": "nodenext",
     "experimentalDecorators": true,
+    "removeComments": false,
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
     "typeRoots": [

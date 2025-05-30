@@ -1,18 +1,28 @@
-import { Entity, PrimaryGeneratedColumn, Column , BaseEntity,OneToMany} from "typeorm";
-import { Length, IsNotEmpty } from "class-validator";
-import { Representante } from "./Representante.js";
+import {
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  Model,
+} from "sequelize";
+import { sequelize } from "../config/databaseConection.js";
+import Representante from "./Representante.js";
 
-@Entity()
-export class Rol extends BaseEntity{
-    @PrimaryGeneratedColumn({ type: 'int' })
-    id !: number;
-
-    @Column({ type: 'varchar', length: 50, unique: true })
-    @Length(3, 50, { message: "El nombre del rol debe tener entre 3 y 50 caracteres." })
-    @IsNotEmpty({ message: "El nombre del rol no puede estar vacío." })
-    nombre!: string;
-
-    // Relación 1:N con Representante
-    @OneToMany(() => Representante, representante => representante.rol)
-    representantes!: Representante[];
+class Rol extends Model<InferAttributes<Rol>, InferCreationAttributes<Rol>> {
+  "id_rol": number;
+  "nombre": string;
 }
+
+Rol.init(
+  {
+    id_rol: { primaryKey: true, type: DataTypes.INTEGER, autoIncrement: true },
+    nombre: { type: DataTypes.STRING, allowNull: false, unique: true },
+  },
+  { sequelize, modelName: "Rol", tableName: "roles", timestamps: false }
+);
+
+Rol.hasMany(Representante, { foreignKey: "id_rol" });
+Representante.belongsTo(Rol, {
+  foreignKey: "id_rol",
+});
+
+export default Rol;
