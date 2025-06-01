@@ -3,7 +3,7 @@ import cors from "cors";
 import http, { Server as HttpServer } from "http";
 import { Server as SocketServer, Socket } from "socket.io";
 import dotenv from "dotenv";
-import generalController from "./server/controllers/generalController.js"; // Sin .js
+import generalController from "./server/controllers/general.controller.js"; // Sin .js
 import path from "path";
 import { __dirname } from "./utils/utils.js";
 import { dbConnection } from "./model/src/config/databaseConection.js";

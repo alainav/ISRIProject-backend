@@ -1,11 +1,8 @@
 import Representante from "../models/Representante.js";
 import { IGeneralResponse } from "./IGeneralResponse.js";
+import { IPaginated } from "./IPaginated.js";
 
-export interface IUserListResponse extends IGeneralResponse {
+export interface IUserListResponse extends IGeneralResponse, IPaginated {
   users: Representante[];
-  paginated: {
-    actual_page: number;
-    total_pages: number;
-  };
   token: string;
 }

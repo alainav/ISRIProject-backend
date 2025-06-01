@@ -45,7 +45,7 @@ export const delete_deputy = (
 export const list_all_deputies = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("GET", "i/login", data, callback);
+) => CRUDOperations("PATCH", "i/login", data, callback);
 
 export const activate_deputy = (
   data: ControllerData,
@@ -55,24 +55,24 @@ export const activate_deputy = (
 export const get_list_deputies = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("GET", "i/login", data, callback);
+) => CRUDOperations("PATCH", "i/login", data, callback);
 
 export const get_list_commissions_presidents = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("GET", "i/login", data, callback);
+) => CRUDOperations("PATCH", "i/login", data, callback);
 
 export const get_list_commissions_secretaries = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("GET", "i/login", data, callback);
+) => CRUDOperations("PATCH", "i/login", data, callback);
 
 export const get_list_general_presidents = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("GET", "i/login", data, callback);
+) => CRUDOperations("PATCH", "i/login", data, callback);
 
 export const get_list_general_secretaries = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("GET", "i/login", data, callback);
+) => CRUDOperations("PATCH", "i/login", data, callback);

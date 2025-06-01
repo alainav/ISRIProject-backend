@@ -1,4 +1,4 @@
-import { SocketsPersonalizados } from "./server/controllers/generalController.ts";
+import { SocketsPersonalizados } from "./server/controllers/general.controller.ts";
 
 // types.d.ts
 declare module "*.js" {

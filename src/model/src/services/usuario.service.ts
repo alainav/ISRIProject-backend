@@ -20,13 +20,14 @@ export class UserService {
 
       // Generar nuevo token con el nombre de usuario del request
       // (Asumiendo que tienes el userName disponible en query)
-      const newToken = createToken(query.userName);
+      const newToken = await createToken(query.userName, undefined);
 
       return {
         users: usuarios.rows,
         paginated: {
           actual_page: pagina,
           total_pages: Math.ceil(usuarios.count / limite),
+          total_count: usuarios.count,
         },
         success: true,
         message: "Ok",

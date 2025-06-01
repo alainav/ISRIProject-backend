@@ -1,4 +1,4 @@
-import { SocketsPersonalizados } from "./controllers/generalController.js";
+import { SocketsPersonalizados } from "./controllers/general.controller.js";
 
 export let online: number = 0;
 export const usersRooms: Map<string, string[]> = new Map();

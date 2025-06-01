@@ -5,10 +5,9 @@ export const firstToUpperCase = (word: string): string | undefined => {
   return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 };
 
-export const firstOfEachWordtoUpperCase = (
-  word: string
-): string | undefined => {
-  if (!word) return undefined;
+export const firstOfEachWordtoUpperCase = (word: string): string => {
+  if (!word)
+    throw new Error("No se ha enviado ninguna palabra para estandarizar");
 
   return word
     .split(" ")

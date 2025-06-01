@@ -1,14 +1,57 @@
 import jwt from "jsonwebtoken";
 import { globalEnv } from "../config/configEnv.js";
+import GeneralResponse from "../models/estandar/GeneralResponse.js";
+import Rol from "../models/Rol.js";
+import { ITokenStructure } from "../interfaces/ITokenStructure.js";
 
-export const createToken = (userName: string | undefined): string => {
-  const secretKey = globalEnv.KEY_JWT;
-
+const secretKey = globalEnv.KEY_JWT;
+export const createToken = async (
+  userName: string | undefined,
+  role: number | undefined
+): Promise<string> => {
   if (!secretKey) {
     throw new Error("No se encontro el valor de la clave del token");
   }
 
-  const token: string = jwt.sign({ userName }, secretKey, { expiresIn: "30d" });
+  let payload;
+
+  if (role) {
+    const rol = await Rol.findByPk(role);
+    const roleName: string | undefined = rol?.dataValues.nombre;
+
+    payload = { userName, roleName, role };
+  } else {
+    payload = { userName };
+  }
+
+  const token: string = jwt.sign(payload, secretKey, {
+    expiresIn: "12h",
+  });
 
   return token;
+};
+
+export const verifyToken = (token: string): ITokenStructure => {
+  let response;
+  try {
+    if (token === null || token === undefined) {
+      response = new GeneralResponse(false, "El token es obligatorio");
+      return { ...response.data, userName: "" };
+    }
+
+    if (!secretKey) {
+      throw new Error("No se encontro el valor de la clave del token");
+    }
+
+    let payload = JSON.parse(JSON.stringify(jwt.verify(token, secretKey)));
+    return {
+      success: true,
+      role: payload.role,
+      roleName: payload.roleName,
+      userName: payload.userName,
+    };
+  } catch (error: any) {
+    response = new GeneralResponse(false, error.message, error);
+    return { ...response.data, userName: "" };
+  }
 };

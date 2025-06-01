@@ -1,5 +1,5 @@
 import RequestAPIData from "../interfaces/RequestAPIData.js";
-import { getSockets } from "../server/controllers/generalController.js";
+import { getSockets } from "../server/controllers/general.controller.js";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 

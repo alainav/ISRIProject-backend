@@ -1,12 +1,12 @@
 import RequestAPIData from "../interfaces/RequestAPIData.js";
-import { getSockets } from "../server/controllers/generalController.js";
+import { getSockets } from "../server/controllers/general.controller.js";
 import CallbackFunction from "../server/interfaces/CallbackFunction.js";
 import ControllerData from "../server/interfaces/ControllerData.js";
 import Data from "./Data.js";
 
 // Plantilla reutilizable para operaciones CRUD
 export const CRUDOperations = async (
-  method: "POST" | "PUT" | "DELETE" | "GET",
+  method: "POST" | "PUT" | "DELETE" | "GET" | "PATCH",
   endpoint: string,
   data: ControllerData,
   callback: CallbackFunction

@@ -1,6 +1,6 @@
 // src/controllers/usuario.controllers.ts
 import { Request, Response } from "express";
-import { UserService } from "../services/usuarioService.js";
+import { UserService } from "../services/usuario.service.js";
 import { IUserQueryRequest } from "../interfaces/IUserQueryRequest.js";
 
 export class UserController {

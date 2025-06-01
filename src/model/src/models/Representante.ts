@@ -22,7 +22,7 @@ class Representante extends Model<
   "f_expiracion": Date;
   "estado": boolean;
   "id_rol": number;
-  "id_comision": number | null;
+  "id_comision"?: number | null;
   "id_pais": number;
 }
 
@@ -80,11 +80,11 @@ Representante.init(
       },
     },
     f_registro: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
     },
     f_expiracion: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
     },
     estado: {

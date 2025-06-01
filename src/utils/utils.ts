@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
 import moment from "moment-timezone";
-import { getSockets } from "../server/controllers/generalController.js";
+import { getSockets } from "../server/controllers/general.controller.js";
 import { online } from "../server/onlines.js";
 
 export const PRIVATEKEY = `MyPubl1cK3yS3cr3t${new Date().getDate()}k3yS3c4r1ty`;
@@ -86,6 +86,10 @@ export const getFechaCuba = (): Date => {
 
 export const getFechaCubaText = (): string => {
   return moment().tz("America/Havana").format("DD-MM-YYYY");
+};
+
+export const addYears = (date: Date, years: number): Date => {
+  return new Date(date.setFullYear(getFechaCuba().getFullYear() + years));
 };
 
 export const convertImagetoURL = async (

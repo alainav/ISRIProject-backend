@@ -1,6 +1,7 @@
 import { IGeneralResponse } from "./IGeneralResponse.js";
+import { IToken } from "./IToken.js";
 
-export interface IRegistrerResponse extends IGeneralResponse {
+export interface IRegistrerResponse extends IGeneralResponse, IToken {
   userName: string;
   email: string;
   first_name: string;
@@ -12,5 +13,5 @@ export interface IRegistrerResponse extends IGeneralResponse {
   code_access: number;
   date_register: Date | null;
   date_expired: Date | null;
-  status: boolean;
+  status: "Activo" | "Inactivo";
 }

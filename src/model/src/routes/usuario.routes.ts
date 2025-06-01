@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { UserService } from "../services/usuarioService.js";
+import { UserService } from "../services/usuario.service.js";
 import { UserController } from "../controllers/usuario.controllers.js";
 import { verificarJWT } from "../middlewares/verificarJWT.js";
 

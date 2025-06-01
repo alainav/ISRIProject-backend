@@ -8,5 +8,5 @@ export const comparePassword = (
   newCodeAccess: number,
   DBCodeAccess: number
 ) => {
-  return newCodeAccess === DBCodeAccess;
+  return newCodeAccess == DBCodeAccess;
 };

@@ -11,21 +11,21 @@ import {
   get_list_commissions_secretaries,
   get_list_general_presidents,
   get_list_general_secretaries,
-} from "./deputyController.js";
+} from "./deputy.controller.js";
 
 import {
   create_edition,
   update_edition,
   delete_edition,
   list_editions,
-} from "./editionController.js";
+} from "./edition.controller.js";
 
 import {
   create_commission,
   update_commission,
   delete_commission,
   list_commissions,
-} from "./commissionController.js";
+} from "./commission.controller.js";
 
 import {
   create_voting,
@@ -35,7 +35,7 @@ import {
   change_status_voting,
   execute_vote,
   show_monitor,
-} from "./votingController.js";
+} from "./voting.controller.js";
 import CustomSocket from "../interfaces/CustomSocket.js";
 import ReassignIdentityData from "../interfaces/ReassignIdentityData.js";
 import PingData from "../interfaces/PingData.js";
