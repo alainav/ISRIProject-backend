@@ -18,10 +18,13 @@ export class EditionsController extends GeneralError {
     }
   };
 
-  /*updateController = async (req: Request, res: Response) => {
+  updateController = async (req: Request, res: Response) => {
     try {
-      req.body.email = req.params.email;
-      const response = await this.authService.updateDeputyService(req.body);
+      const { id } = req.params;
+      const response = await this.editionService.updateEditionService(
+        Number(id),
+        req.body
+      );
       res.status(response.success ? 200 : 500).json(response);
     } catch (error: any) {
       this.generalError(res, error.message);
@@ -30,12 +33,24 @@ export class EditionsController extends GeneralError {
 
   deleteController = async (req: Request, res: Response) => {
     try {
-      const response = await this.authService.deleteDeputyService(
-        req.params.email
+      const response = await this.editionService.deleteEditionService(
+        Number(req.params.id)
       );
       res.status(response.success ? 200 : 500).json(response);
     } catch (error: any) {
       this.generalError(res, error.message);
     }
-  };*/
+  };
+
+  listController = async (req: Request, res: Response) => {
+    try {
+      const { page } = req.query;
+      const response = await this.editionService.listEditionService(
+        Number(page)
+      );
+      res.status(response.success ? 200 : 500).json(response);
+    } catch (error: any) {
+      this.generalError(res, error.message);
+    }
+  };
 }

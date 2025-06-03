@@ -4,6 +4,7 @@ import Edicion from "../models/Edicion.js";
 import { getFechaCuba } from "../../../utils/utils.js";
 import GeneralResponse from "../models/estandar/GeneralResponse.js";
 
+let flag = true;
 const verifyCommissionOperation = async (
   req: Request,
   res: Response,
@@ -21,23 +22,55 @@ const verifyCommissionOperation = async (
     return;
   }
 
-  const edition = await Edicion.findByPk(comision.id_edicion);
+  req.body.auxId = comision.id_edicion;
 
+  await verifyEditionOperation(req, res, next);
+
+  req.body.auxId = undefined;
+
+  if (!flag) {
+    flag = true;
+    return;
+  }
+
+  return next();
+};
+
+const verifyEditionOperation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  let { id } = req.params;
+  const { auxId } = req.body;
+
+  id = auxId ? auxId : id;
+  const edition = await Edicion.findByPk(id);
   if (!edition) {
     const response = new GeneralResponse(
       false,
-      `Operación denegada. ID ${comision.id_edicion} no encontrado en ediciones`
+      `Operación denegada. ID ${id} no encontrado en las ediciones`
     );
     res.status(400).json(response);
+    flag = false;
     return;
   }
 
   if (getFechaCuba().getTime() > new Date(edition.f_fin).getTime()) {
     const response = new GeneralResponse(
       false,
-      `Operación denegada. La comisión ${comision.nombre} no puede ser eliminada, la edición asociada culminó el ${edition.f_fin}`
+      `Operación denegada. Todas las operaciones de escritura sobre la edición ${
+        edition.nombre
+      } están limitadas, la edición culminó el ${new Date(
+        edition.f_fin
+      ).toLocaleDateString()}`
     );
     res.status(400).json(response);
+    flag = false;
+    return;
+  }
+
+  if (auxId) {
     return;
   }
 
@@ -46,4 +79,5 @@ const verifyCommissionOperation = async (
 
 export default {
   verifyCommissionOperation,
+  verifyEditionOperation,
 };

@@ -1,10 +1,10 @@
 import { Router } from "express";
 import authValidators from "../middlewares/authMiddlewares.js";
-import commissionMiddlewares from "../middlewares/commissionMiddlewares.js";
-import { CommissionControllers } from "../controllers/commission.controller.js";
-import { CommissionServices } from "../services/commission.service.js";
+import { EditionsController } from "../controllers/editions.controller.js";
+import { EditionService } from "../services/editions.service.js";
+import generalMiddlewares from "../middlewares/generalMiddlewares.js";
 
-const controller = new CommissionControllers(new CommissionServices());
+const controller = new EditionsController(new EditionService());
 
 export const createEditionsRoutes = (): Router => {
   const router: Router = Router();
@@ -19,7 +19,7 @@ export const createEditionsRoutes = (): Router => {
     "/update/:id",
     [
       authValidators.verifyAccessByToken,
-      commissionMiddlewares.verifyCommissionOperation,
+      generalMiddlewares.verifyEditionOperation,
     ],
     controller.updateController
   );
@@ -28,7 +28,7 @@ export const createEditionsRoutes = (): Router => {
     "/delete/:id",
     [
       authValidators.verifyAccessByToken,
-      commissionMiddlewares.verifyCommissionOperation,
+      generalMiddlewares.verifyEditionOperation,
     ],
     controller.deleteController
   );

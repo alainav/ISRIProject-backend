@@ -17,6 +17,10 @@ export const minutesToMiliseconds = (minutes: number): number => {
   return minutes * 60 * 1000;
 };
 
+export const milisecondsToDays = (miliseconds: number): number => {
+  return miliseconds / 24 / 60 / 60 / 1000;
+};
+
 export const calcularPaginas = (
   count: number,
   limit: number
@@ -32,6 +36,9 @@ export const calcularOffset = (
   page: number = 1,
   limit: number = 10
 ): number => {
+  
+  if (Number.isNaN(page)) page = 1;
+
   if (page < 1) page = 1;
   return (page - 1) * limit;
 };
