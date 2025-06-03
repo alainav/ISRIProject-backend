@@ -8,6 +8,7 @@ import { sequelize } from "../config/databaseConection.js";
 import Comision from "./Comision.js";
 import Representante from "./Representante.js";
 import Voto from "./Voto.js";
+import Comision_Pais from "./Comision_Pais.js";
 
 class Pais extends Model<InferAttributes<Pais>, InferCreationAttributes<Pais>> {
   "id_pais": number;
@@ -56,5 +57,7 @@ Voto.belongsTo(Pais, { foreignKey: "id_pais" });
 Representante.belongsTo(Pais, {
   foreignKey: "id_pais",
 });
+
+Pais.hasMany(Comision_Pais, { foreignKey: "id_pais", onDelete: "CASCADE" });
 
 export default Pais;

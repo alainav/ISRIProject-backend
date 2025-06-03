@@ -89,7 +89,7 @@ export const getFechaCubaText = (): string => {
 };
 
 export const addYears = (date: Date, years: number): Date => {
-  return new Date(date.setFullYear(getFechaCuba().getFullYear() + years));
+  return new Date(date.setFullYear(date.getFullYear() + years));
 };
 
 export const convertImagetoURL = async (

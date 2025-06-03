@@ -124,17 +124,41 @@ const verifyAccessByToken = async (
       res.status(400).json(response);
       return;
     }
-  } else {
-    if (roleName != "Presidente General" && roleName != "Secretario General") {
-      const response = new GeneralResponse(
-        false,
-        "Operación denegada. Privilegios Ínvalidos"
-      );
-      res.status(400).json(response);
-      return;
-    }
+  } else if (
+    roleName !== "Presidente General" &&
+    roleName !== "Secretario General" &&
+    roleName !== "Administrador"
+  ) {
+    const response = new GeneralResponse(
+      false,
+      "Operación denegada. Privilegios Ínvalidos"
+    );
+    res.status(400).json(response);
+    return;
   }
 
+  return next();
+};
+
+const verifyAccessByTokenAndContinue = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { token, deputyUserName } = req.body;
+
+  const { roleName, userName, success, message, email } = verifyToken(token);
+  if (!success) {
+    res.status(400).json({ success, message });
+    return;
+  }
+
+  //Me da la información del usuario logueado
+  req.body.actualUser = {
+    roleName,
+    userName,
+    email,
+  };
   return next();
 };
 
@@ -185,6 +209,7 @@ export default {
   verifyIdCountry,
   verifyIdDeputy,
   verifyAccessByToken,
+  verifyAccessByTokenAndContinue,
   comprobateIdRole,
   comprobateIdCountry,
   comprobateIdDeputy,

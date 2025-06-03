@@ -19,10 +19,9 @@ class Representante extends Model<
   "s_apellido": string;
   "c_acceso": number;
   "f_registro": Date;
-  "f_expiracion": Date;
+  "f_expiracion": Date | null;
   "estado": boolean;
   "id_rol": number;
-  "id_comision"?: number | null;
   "id_pais": number;
 }
 
@@ -85,7 +84,7 @@ Representante.init(
     },
     f_expiracion: {
       type: DataTypes.DATEONLY,
-      allowNull: false,
+      allowNull: true,
     },
     estado: {
       type: DataTypes.BOOLEAN,
@@ -95,10 +94,6 @@ Representante.init(
     id_rol: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    },
-    id_comision: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
     },
     id_pais: {
       type: DataTypes.INTEGER,

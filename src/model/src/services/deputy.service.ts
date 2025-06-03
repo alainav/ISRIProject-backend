@@ -37,7 +37,11 @@ export class AuthService {
         comparePassword(requestData.code_access, user.c_acceso)
       );
       if (comparePassword(requestData.code_access, user.c_acceso)) {
-        const token = await createToken(requestData.userName, user.id_rol);
+        const token = await createToken(
+          requestData.userName,
+          user.id_rol,
+          user.correo
+        );
         return {
           success: true,
           message: "Acceso Concedido",
@@ -87,26 +91,31 @@ export class AuthService {
 
       // 2. Crear fechas
       const f_registro = getFechaCuba();
-      const f_expiracion = addYears(f_registro, 1);
+      const f_expiracion = addYears(getFechaCuba(), 1);
 
       // 3. Crear y guardar representante
       const representante = await Representante.create({
         usuario: requestData.userName,
         correo: requestData.email,
         p_nombre: firstOfEachWordtoUpperCase(requestData.first_name),
-        s_nombre: firstOfEachWordtoUpperCase(requestData.second_name) || null,
+        s_nombre: requestData.second_name
+          ? firstOfEachWordtoUpperCase(requestData.second_name)
+          : null,
         p_apellido: firstOfEachWordtoUpperCase(requestData.first_surname),
         s_apellido: firstOfEachWordtoUpperCase(requestData.second_surname),
         c_acceso: codeAccess,
         estado: true,
-        f_registro: f_registro,
-        f_expiracion: f_expiracion,
         id_rol: rol.dataValues.id_rol,
         id_pais: pais.dataValues.id_pais,
-        id_comision: comision?.dataValues?.id_comision || null,
+        f_expiracion,
+        f_registro,
       });
 
-      const token = await createToken(requestData.userName, requestData.role);
+      const token = await createToken(
+        requestData.userName,
+        requestData.role,
+        representante.correo
+      );
 
       // 5. Retornar respuesta
       return {
@@ -122,8 +131,8 @@ export class AuthService {
         message: "Usuario registrado correctamente",
         success: true,
         status: "Activo",
-        date_register: f_registro,
-        date_expired: f_expiracion,
+        date_register: representante.f_registro,
+        date_expired: representante.f_expiracion,
         token,
       };
     } catch (error: any) {
@@ -172,7 +181,8 @@ export class AuthService {
 
       const token = await createToken(
         representante.usuario,
-        representante.id_rol
+        representante.id_rol,
+        representante.correo
       );
 
       // 5. Retornar respuesta

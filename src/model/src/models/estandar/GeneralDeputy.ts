@@ -13,10 +13,6 @@ export class GeneralDeputy implements IDeputy {
     id: number;
     name?: string;
   };
-  commission?: {
-    id?: number;
-    name?: string;
-  };
   country: {
     id: number;
     name?: string;
@@ -45,10 +41,6 @@ export class GeneralDeputy implements IDeputy {
     },
     code_access: number,
     status: "Activo" | "Inactivo",
-    commission?: {
-      id?: number;
-      name?: string;
-    },
     date_register?: Date | null,
     date_expired?: Date | null
   ) {
@@ -59,7 +51,6 @@ export class GeneralDeputy implements IDeputy {
     this.country = country;
     this.code_access = code_access;
     this.status = status;
-    this.commission = commission;
     this.date_register = date_register;
     this.date_expired = date_expired;
   }
@@ -73,7 +64,6 @@ export class GeneralDeputy implements IDeputy {
       country: this.country,
       code_access: this.code_access,
       status: this.status,
-      commission: this.commission,
       date_register: this.date_register,
       date_expired: this.date_expired,
     };

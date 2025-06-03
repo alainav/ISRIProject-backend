@@ -7,7 +7,8 @@ import { ITokenStructure } from "../interfaces/ITokenStructure.js";
 const secretKey = globalEnv.KEY_JWT;
 export const createToken = async (
   userName: string | undefined,
-  role: number | undefined
+  role: number | undefined,
+  email: string
 ): Promise<string> => {
   if (!secretKey) {
     throw new Error("No se encontro el valor de la clave del token");
@@ -19,9 +20,9 @@ export const createToken = async (
     const rol = await Rol.findByPk(role);
     const roleName: string | undefined = rol?.dataValues.nombre;
 
-    payload = { userName, roleName, role };
+    payload = { userName, roleName, role, email };
   } else {
-    payload = { userName };
+    payload = { userName, email };
   }
 
   const token: string = jwt.sign(payload, secretKey, {
@@ -36,7 +37,7 @@ export const verifyToken = (token: string): ITokenStructure => {
   try {
     if (token === null || token === undefined) {
       response = new GeneralResponse(false, "El token es obligatorio");
-      return { ...response.data, userName: "" };
+      return { ...response.data, userName: "", email: "" };
     }
 
     if (!secretKey) {
@@ -49,9 +50,10 @@ export const verifyToken = (token: string): ITokenStructure => {
       role: payload.role,
       roleName: payload.roleName,
       userName: payload.userName,
+      email: payload.email,
     };
   } catch (error: any) {
     response = new GeneralResponse(false, error.message, error);
-    return { ...response.data, userName: "" };
+    return { ...response.data, userName: "", email: "" };
   }
 };

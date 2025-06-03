@@ -9,15 +9,17 @@ import Pais from "./Pais.js";
 import Votacion from "./Votacion.js";
 import Representante from "./Representante.js";
 import Edicion from "./Edicion.js";
+import Comision_Pais from "./Comision_Pais.js";
 
 class Comision extends Model<
   InferAttributes<Comision>,
   InferCreationAttributes<Comision>
 > {
-  "id_comision": number;
+  "id_comision"?: number;
   "nombre": string;
-  "id_pais": number;
   "id_edicion": number;
+  "presidente": string;
+  "secretario": string;
 }
 
 Comision.init(
@@ -31,12 +33,16 @@ Comision.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    id_pais: {
+    id_edicion: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    id_edicion: {
-      type: DataTypes.INTEGER,
+    presidente: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    secretario: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
   },
@@ -48,14 +54,7 @@ Comision.init(
   }
 );
 
-Comision.belongsTo(Pais, {
-  foreignKey: "id_pais",
-});
-
-Pais.hasMany(Comision, {
-  foreignKey: "id_pais",
-  onDelete: "CASCADE",
-});
+Pais.hasMany(Comision_Pais, { foreignKey: "id_comision", onDelete: "CASCADE" });
 
 Edicion.hasMany(Comision, { foreignKey: "id_edicion", onDelete: "CASCADE" });
 Comision.belongsTo(Edicion, { foreignKey: "id_edicion", onDelete: "CASCADE" });
@@ -69,10 +68,16 @@ Votacion.belongsTo(Comision, {
 });
 
 Comision.hasMany(Representante, {
-  foreignKey: "id_comision",
+  foreignKey: "id_president",
 });
 Representante.belongsTo(Comision, {
-  foreignKey: "id_comision",
+  foreignKey: "id_president",
 });
 
+Comision.hasMany(Representante, {
+  foreignKey: "id_secretary",
+});
+Representante.belongsTo(Comision, {
+  foreignKey: "id_secretary",
+});
 export default Comision;

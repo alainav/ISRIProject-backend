@@ -11,7 +11,7 @@ class Edicion extends Model<
   InferAttributes<Edicion>,
   InferCreationAttributes<Edicion>
 > {
-  "id_edicion": number;
+  "id_edicion"?: number;
   "nombre": string;
   "f_inicio": Date;
   "f_fin": Date;

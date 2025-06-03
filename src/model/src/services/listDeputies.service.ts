@@ -121,17 +121,6 @@ class PrepareListsDeputies {
         name: countryName?.nombre,
       };
 
-      //Necesario para constuir el objeto commission
-      let commissionName;
-      let commission;
-      if (dep.id_comision) {
-        commissionName = await Comision.findByPk(dep.id_comision);
-        commission = {
-          id: dep.id_comision,
-          name: commissionName?.dataValues.nombre,
-        };
-      }
-
       const deputy = new GeneralDeputy(
         dep.usuario,
         dep.correo,
@@ -140,7 +129,6 @@ class PrepareListsDeputies {
         country,
         dep.c_acceso,
         dep.estado ? "Activo" : "Inactivo",
-        commission,
         dep.f_registro,
         dep.f_expiracion
       );
