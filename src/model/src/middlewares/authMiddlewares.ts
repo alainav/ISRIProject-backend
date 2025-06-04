@@ -162,6 +162,35 @@ const verifyAccessByTokenAndContinue = async (
   return next();
 };
 
+const verifyDeputyByToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { token } = req.body;
+
+  const { roleName, userName, success, message } = verifyToken(token);
+  if (!success) {
+    res.status(400).json({ success, message });
+    return;
+  }
+
+  const deputy = await Representante.findOne({ where: { usuario: userName } });
+
+  if (roleName !== "Representante") {
+    const response = new GeneralResponse(
+      false,
+      "Operación denegada. Privilegios Inválidos"
+    );
+    res.status(400).json(response);
+    return;
+  }
+
+  req.body.country = deputy?.id_pais;
+
+  return next();
+};
+
 const comprobateIdRole = async (
   req: Request,
   res: Response,
@@ -209,6 +238,7 @@ export default {
   verifyIdCountry,
   verifyIdDeputy,
   verifyAccessByToken,
+  verifyDeputyByToken,
   verifyAccessByTokenAndContinue,
   comprobateIdRole,
   comprobateIdCountry,

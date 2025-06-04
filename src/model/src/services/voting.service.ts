@@ -1,0 +1,420 @@
+import moment from "moment";
+import { List } from "../../../utils/List.js";
+import {
+  calcularOffset,
+  calcularPaginas,
+  getFechaCuba,
+  getFechaCubaText,
+  getHoraCubaText,
+} from "../../../utils/utils.js";
+import { ICommissionElement } from "../interfaces/ICommissionElements.js";
+import { IGeneralResponse } from "../interfaces/IGeneralResponse.js";
+import { IRegistrerCommission } from "../interfaces/IRegistrerCommission.js";
+import Comision from "../models/Comision.js";
+import Comision_Pais from "../models/Comision_Pais.js";
+import Edicion from "../models/Edicion.js";
+import GeneralResponse from "../models/estandar/GeneralResponse.js";
+import { ICommission } from "../models/interfaces/ICommision.js";
+import Pais from "../models/Pais.js";
+import Representante from "../models/Representante.js";
+import { Op } from "sequelize";
+import { GeneralPaginated } from "../models/estandar/GeneralPaginated.js";
+import { IPaginated } from "../interfaces/IPaginated.js";
+import { IVotingRequest } from "../interfaces/IVotingRequest.js";
+import Votacion from "../models/Votacion.js";
+import { IVotingResponse } from "../interfaces/IVotingResponse.js";
+import Voto from "../models/Voto.js";
+import { IVoting } from "../models/interfaces/IVoting.js";
+import { IVote } from "../models/interfaces/IVote.js";
+
+export class VotingService {
+  async registerVotingService(data: IVotingRequest): Promise<IVotingResponse> {
+    try {
+      const { voting_name, voting_description, commission } = data;
+
+      const comision = await Comision.findByPk(commission);
+
+      if (!comision) {
+        throw new Error("Bad Error, exist not the commission");
+      }
+
+      const votacion = await Votacion.create({
+        nombre: voting_name,
+        description: voting_description,
+        id_comision: commission,
+        resultado: "No iniciada",
+        estado: "Cerrada",
+      });
+
+      return {
+        success: true,
+        message: "Votación agregada con éxito",
+        voting_name: votacion.nombre,
+        description: votacion.description,
+        commission_name: comision.nombre,
+        abstention: 0,
+        against: 0,
+        in_favour: 0,
+        id_voting: votacion.id_votacion,
+        result: "No iniciada",
+        state: "Cerrada",
+      };
+    } catch (error: any) {
+      console.error("Error al crear Votación:", error);
+
+      throw error;
+    }
+  }
+
+  async updateVotingService(
+    id: number,
+    data: IVotingRequest
+  ): Promise<IVotingResponse> {
+    try {
+      const { voting_name, voting_description, commission } = data;
+
+      const votacion = await Votacion.findByPk(id);
+
+      if (!votacion) {
+        throw new Error(`Votacion ${id} no encontrada en las votaciones`);
+      }
+      const comision = await Comision.findByPk(votacion.id_comision);
+
+      if (!comision) {
+        throw new Error("Bad Error, exist not the commission");
+      }
+
+      await votacion.update({
+        nombre: voting_name,
+        description: voting_description,
+        id_comision: commission,
+      });
+
+      return {
+        success: true,
+        message: "Votación actualizada con éxito",
+        voting_name: votacion.nombre,
+        description: votacion.description,
+        commission_name: comision.nombre,
+        abstention: votacion.abstencion,
+        against: votacion.en_contra,
+        in_favour: votacion.a_favor,
+        id_voting: votacion.id_votacion,
+        result: votacion.resultado,
+        state: votacion.estado,
+      };
+    } catch (error: any) {
+      console.error("Error al actualizar la Votación:", error);
+
+      throw error;
+    }
+  }
+
+  async deleteVotingService(id: number): Promise<IGeneralResponse> {
+    try {
+      await Votacion.destroy({ where: { id_votacion: id } });
+      await Voto.destroy({ where: { id_votacion: id } });
+
+      const response = new GeneralResponse(
+        true,
+        `Votación con ID ${id} eliminada con éxito`
+      );
+      // 5. Retornar respuesta
+      return response.data;
+    } catch (error: any) {
+      console.error("Error en servicio de eliminación:", error);
+
+      throw error;
+    }
+  }
+
+  async listVotingsService(
+    page: number = 1,
+    email: string
+  ): Promise<{ votings: IVoting[]; paginated: IPaginated }> {
+    try {
+      const offset = calcularOffset(page, 10);
+
+      const representante = await Representante.findByPk(email);
+
+      const paises = await Comision_Pais.findAll({
+        where: { id_pais: representante?.id_pais },
+      });
+
+      const votaciones = await Votacion.findAndCountAll({
+        limit: 10,
+        offset,
+        where: {
+          id_comision: {
+            [Op.in]: paises.map((e) => {
+              return e.id_comision;
+            }),
+          },
+        },
+      });
+
+      const result = new List<IVoting>();
+      for (let elem of votaciones.rows) {
+        if (!elem) {
+          throw new Error("Bad, Error");
+        }
+
+        const comision = await Comision.findByPk(elem.id_comision);
+
+        if (!comision) {
+          throw new Error("Bad, Error");
+        }
+
+        const adding = {
+          id_voting: elem.id_votacion,
+          voting_name: elem.nombre,
+          description: elem.description,
+          result: elem.resultado,
+          commission_name: comision.nombre,
+          in_favour: elem.a_favor || 0,
+          against: elem.en_contra || 0,
+          abstention: elem.abstencion || 0,
+          state: elem.estado,
+        };
+
+        result.add(adding);
+      }
+
+      const { totalPages, totalRecords } = calcularPaginas(
+        votaciones.count,
+        10
+      );
+      const paginated = new GeneralPaginated(totalPages, totalRecords, page);
+
+      return { votings: result.elements, paginated: paginated.data };
+    } catch (error: any) {
+      console.error("Error en servicio de listar votaciones:", error);
+
+      throw error;
+    }
+  }
+
+  async changeStatusVotingService(id: number): Promise<IGeneralResponse> {
+    try {
+      const votacion = await Votacion.findByPk(id);
+
+      if (!votacion) {
+        throw new Error(`Votación ${id} no encontrada`);
+      }
+
+      let estado: "Abierta" | "Cerrada";
+      if (votacion.estado === "Cerrada") {
+        estado = "Abierta";
+        await votacion.update({
+          estado,
+          resultado: "En proceso",
+          fecha: getFechaCuba(),
+        });
+      } else {
+        estado = "Cerrada";
+        let resultado:
+          | "No iniciada"
+          | "Aprobada"
+          | "Denegada"
+          | "Sin Desición"
+          | "En proceso";
+
+        const { aFavor, enContra, abstencion } = await this.contarVotos(id);
+
+        if (aFavor > enContra && aFavor > abstencion) {
+          resultado = "Aprobada";
+        } else if (enContra > aFavor && enContra > abstencion) {
+          resultado = "Denegada";
+        } else {
+          resultado = "Sin Desición";
+        }
+
+        await votacion.update({
+          estado: "Cerrada",
+          resultado,
+          hora: getHoraCubaText(),
+        });
+      }
+
+      const response = new GeneralResponse(
+        true,
+        `Votación con ID ${id} ${estado} con éxito`
+      );
+      // 5. Retornar respuesta
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error en servicio de cambio de estado de votación:",
+        error
+      );
+
+      throw error;
+    }
+  }
+
+  async executeVoteService(
+    id: number,
+    country: number,
+    voto: number
+  ): Promise<IGeneralResponse> {
+    try {
+      const votacion = await Votacion.findByPk(id);
+
+      if (!votacion) {
+        throw new Error(`Votación ${id} no encontrada`);
+      }
+
+      if (votacion.fecha === null) {
+        throw new Error(`Operación Inválida. Votación ${id} cerrada`);
+      }
+
+      const votada = await Voto.findOne({
+        where: { id_pais: country, id_votacion: id },
+      });
+
+      if (votada) {
+        let v: string;
+        if (votada.a_favor) {
+          v = "A Favor";
+        } else if (votada.en_contra) {
+          v = "En Contra";
+        } else {
+          v = "de Abstención";
+        }
+        throw new Error(`Voto ${v} ejecutado`);
+      }
+
+      const pais = await Pais.findByPk(country);
+
+      let vote: string;
+      switch (voto) {
+        case 0:
+          vote = "En Contra";
+          await Voto.create({
+            id_pais: country,
+            id_votacion: id,
+            a_favor: false,
+            abstencion: false,
+            en_contra: true,
+          });
+          break;
+
+        case 1:
+          vote = "A Favor";
+          await Voto.create({
+            id_pais: country,
+            id_votacion: id,
+            a_favor: true,
+            abstencion: false,
+            en_contra: false,
+          });
+          break;
+        default:
+          vote = "de Abstención";
+          await Voto.create({
+            id_pais: country,
+            id_votacion: id,
+            a_favor: false,
+            abstencion: true,
+            en_contra: false,
+          });
+          break;
+      }
+
+      const { aFavor, enContra, abstencion } = await this.contarVotos(id);
+      console.log(aFavor, enContra, abstencion);
+
+      await votacion.update({
+        a_favor: aFavor,
+        en_contra: enContra,
+        abstencion,
+      });
+
+      const response = new GeneralResponse(
+        true,
+        `Voto ${vote} ejecutado por ${pais?.nombre}`
+      );
+      // 5. Retornar respuesta
+      return response.data;
+    } catch (error: any) {
+      console.error("Error en servicio de ejecucion de voto:", error);
+
+      throw error;
+    }
+  }
+
+  async showMonitorService(
+    id: number
+  ): Promise<{ votes: IVote[]; success: boolean }> {
+    try {
+      const votacion = await Votacion.findByPk(id);
+
+      if (!votacion) {
+        throw new Error(`Votación ${id} no encontrada`);
+      }
+
+      const pais = await Comision_Pais.findAll({
+        where: { id_comision: votacion.id_comision },
+      });
+
+      const lista = new List<IVote>();
+      for (let p of pais) {
+        const v = await Voto.findOne({
+          where: { id_pais: p.id_pais, id_votacion: id },
+        });
+
+        let vote: number;
+
+        if (!v) {
+          vote = -1;
+        } else if (v.a_favor) {
+          vote = 1;
+        } else if (v.en_contra) {
+          vote = 0;
+        } else if (v.abstencion) {
+          vote = 2;
+        } else {
+          vote = -1;
+        }
+
+        const pais = await Pais.findByPk(p.id_pais);
+
+        if (!pais) {
+          throw new Error("Bad Error, exists not that country");
+        }
+        
+        const resultado = {
+          country: pais.nombre,
+          vote: vote,
+        };
+
+        lista.add(resultado);
+      }
+
+      // 5. Retornar respuesta
+      return { votes: lista.elements, success: true };
+    } catch (error: any) {
+      console.error("Error en servicio de monitarizacion de votos:", error);
+
+      throw error;
+    }
+  }
+
+  private contarVotos = async (
+    id: number
+  ): Promise<{ aFavor: number; enContra: number; abstencion: number }> => {
+    const aFavor = await Voto.count({
+      where: { id_votacion: id, a_favor: true },
+    });
+
+    const enContra = await Voto.count({
+      where: { id_votacion: id, en_contra: true },
+    });
+
+    const abstencion = await Voto.count({
+      where: { id_votacion: id, abstencion: true },
+    });
+
+    return { aFavor, enContra, abstencion };
+  };
+}

@@ -24,7 +24,7 @@ export class CommissionServices {
     requestData: IRegistrerCommission
   ): Promise<ICommission> {
     try {
-      const { name, countries, edition, president, secretary } = requestData;
+      let { name, countries, edition, president, secretary } = requestData;
 
       const edicion = await Edicion.findByPk(edition);
 
@@ -57,6 +57,16 @@ export class CommissionServices {
       }
 
       const result = new List<ICommissionElement>();
+
+      if (countries[0] === 0) {
+
+        const paises = await Pais.findAll();
+        countries = paises.map((p) => {
+          return p.id_pais;
+        });
+
+      }
+      
       for (let c of countries) {
         const country = await Pais.findByPk(c);
 

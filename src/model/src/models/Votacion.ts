@@ -7,15 +7,28 @@ import {
 import { sequelize } from "../config/databaseConection.js";
 import Comision from "./Comision.js";
 import Voto from "./Voto.js";
+import { getFechaCuba, getHoraCubaText } from "../../../utils/utils.js";
 
 class Votacion extends Model<
   InferAttributes<Votacion>,
   InferCreationAttributes<Votacion>
 > {
-  "id_votacion": number;
+  "id_votacion"?: number;
   "nombre": string;
   "description": string;
-  "resultado": number;
+  "resultado":
+    | "No iniciada"
+    | "Aprobada"
+    | "Denegada"
+    | "Sin Desición"
+    | "En proceso";
+  "id_comision": number;
+  "abstencion"?: number;
+  "en_contra"?: number;
+  "a_favor"?: number;
+  "estado": "Abierta" | "Cerrada";
+  "fecha"?: Date;
+  "hora"?: string;
 }
 
 Votacion.init(
@@ -33,9 +46,40 @@ Votacion.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    resultado: {
+    id_comision: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
+    },
+    resultado: {
+      type: DataTypes.STRING,
+      defaultValue: "No Iniciada",
+    },
+    estado: {
+      type: DataTypes.STRING,
+      defaultValue: "Cerrada",
+    },
+    fecha: {
+      type: DataTypes.DATEONLY,
+      defaultValue: null,
+    },
+    hora: {
+      type: DataTypes.STRING,
+      defaultValue: null,
+    },
+    a_favor: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    en_contra: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    abstencion: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
     },
   },
   {

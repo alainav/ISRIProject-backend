@@ -3,6 +3,7 @@ import { createAuthRoutes } from "./deputy.routes.js";
 import { createListDeputiesRoutes } from "./list-deputies.routes.js";
 import { createCommissionsRoutes } from "./commission.routes.js";
 import { createEditionsRoutes } from "./editions.routes.js";
+import { createVotingRoutes } from "./voting.routes.js";
 
 export const createRoutes = () => {
   const router = Router();
@@ -12,6 +13,7 @@ export const createRoutes = () => {
   router.use("/deputy", createAuthRoutes());
   router.use("/commission", createCommissionsRoutes());
   router.use("/editions", createEditionsRoutes());
+  router.use("/voting", createVotingRoutes());
 
   return router;
 };

@@ -8,7 +8,7 @@ import { sequelize } from "../config/databaseConection.js";
 import Votacion from "./Votacion.js";
 
 class Voto extends Model<InferAttributes<Voto>, InferCreationAttributes<Voto>> {
-  "id_voto": number;
+  "id_voto"?: number;
   "a_favor": boolean;
   "en_contra": boolean;
   "abstencion": boolean;
@@ -40,7 +40,7 @@ Voto.init(
     },
     id_votacion: {
       type: DataTypes.INTEGER,
-      unique: true,
+      allowNull: false,
     },
     id_pais: {
       type: DataTypes.INTEGER,
