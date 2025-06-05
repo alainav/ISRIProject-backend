@@ -1,10 +1,10 @@
 import moment from "moment";
-import { List } from "../../../utils/List.js";
+import { List } from "../../utils/List.js";
 import {
   calcularOffset,
   calcularPaginas,
   getFechaCuba,
-} from "../../../utils/utils.js";
+} from "../../utils/utils.js";
 import { ICommissionElement } from "../interfaces/ICommissionElements.js";
 import { IGeneralResponse } from "../interfaces/IGeneralResponse.js";
 import { IRegistrerCommission } from "../interfaces/IRegistrerCommission.js";
@@ -59,14 +59,12 @@ export class CommissionServices {
       const result = new List<ICommissionElement>();
 
       if (countries[0] === 0) {
-
         const paises = await Pais.findAll();
         countries = paises.map((p) => {
           return p.id_pais;
         });
-
       }
-      
+
       for (let c of countries) {
         const country = await Pais.findByPk(c);
 

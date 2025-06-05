@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import Comision from "../models/Comision.js";
 import Edicion from "../models/Edicion.js";
-import { getFechaCuba } from "../../../utils/utils.js";
+import { getFechaCuba } from "../../utils/utils.js";
 import GeneralResponse from "../models/estandar/GeneralResponse.js";
 import Votacion from "../models/Votacion.js";
 

@@ -1,7 +1,7 @@
 // config/configEnv.ts
 import path from "path";
 import dotenv from "dotenv";
-import { __dirname } from "../../../utils/utils.js";
+import { __dirname } from "../../utils/utils.js";
 
 dotenv.config({
   path: path.resolve(__dirname, "../.env"),

@@ -2,8 +2,8 @@ import moment from "moment";
 import {
   firstOfEachWordtoUpperCase,
   generateRandomNumberExtended,
-} from "../../../server/helpers/estandarizadores.js";
-import { addYears, getFechaCuba } from "../../../utils/utils.js";
+} from "../../server/helpers/estandarizadores.js";
+import { addYears, getFechaCuba } from "../../utils/utils.js";
 import { ILoginRequest } from "../interfaces/ILoginRequest.js";
 import { ILoginResponse } from "../interfaces/ILoginResponse.js";
 import { IRegisterUserRequest } from "../interfaces/IRegisterUserRequest.js";

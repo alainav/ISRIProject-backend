@@ -1,20 +1,14 @@
-import moment from "moment";
-import { List } from "../../../utils/List.js";
+import { List } from "../../utils/List.js";
 import {
   calcularOffset,
   calcularPaginas,
   getFechaCuba,
-  getFechaCubaText,
   getHoraCubaText,
-} from "../../../utils/utils.js";
-import { ICommissionElement } from "../interfaces/ICommissionElements.js";
+} from "../../utils/utils.js";
 import { IGeneralResponse } from "../interfaces/IGeneralResponse.js";
-import { IRegistrerCommission } from "../interfaces/IRegistrerCommission.js";
 import Comision from "../models/Comision.js";
 import Comision_Pais from "../models/Comision_Pais.js";
-import Edicion from "../models/Edicion.js";
 import GeneralResponse from "../models/estandar/GeneralResponse.js";
-import { ICommission } from "../models/interfaces/ICommision.js";
 import Pais from "../models/Pais.js";
 import Representante from "../models/Representante.js";
 import { Op } from "sequelize";
@@ -382,7 +376,7 @@ export class VotingService {
         if (!pais) {
           throw new Error("Bad Error, exists not that country");
         }
-        
+
         const resultado = {
           country: pais.nombre,
           vote: vote,

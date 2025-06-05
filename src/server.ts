@@ -6,8 +6,8 @@ import dotenv from "dotenv";
 import generalController from "./server/controllers/general.controller.js"; // Sin .js
 import path from "path";
 import { __dirname } from "./utils/utils.js";
-import { dbConnection } from "./model/src/config/databaseConection.js";
-import { createRoutes } from "./model/src/routes/index.js";
+import { createRoutes } from "./model/routes/index.js";
+import { dbConnection } from "./model/config/databaseConection.js";
 
 dotenv.config();
 const clientBuildPath = path.join(__dirname, "../client/build");

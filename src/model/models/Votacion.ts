@@ -5,9 +5,6 @@ import {
   Model,
 } from "sequelize";
 import { sequelize } from "../config/databaseConection.js";
-import Comision from "./Comision.js";
-import Voto from "./Voto.js";
-import { getFechaCuba, getHoraCubaText } from "../../../utils/utils.js";
 
 class Votacion extends Model<
   InferAttributes<Votacion>,

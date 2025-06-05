@@ -1,5 +1,5 @@
-import { List } from "../../../utils/List.js";
-import { calcularOffset, calcularPaginas } from "../../../utils/utils.js";
+import { List } from "../../utils/List.js";
+import { calcularOffset, calcularPaginas } from "../../utils/utils.js";
 import Pais from "../models/Pais.js";
 import { GeneralPaginated } from "../models/estandar/GeneralPaginated.js";
 import { IPaginated } from "../interfaces/IPaginated.js";

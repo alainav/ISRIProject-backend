@@ -1,6 +1,5 @@
-import { calcularOffset, calcularPaginas } from "../../../utils/utils.js";
+import { calcularOffset, calcularPaginas } from "../../utils/utils.js";
 import { IPaginated } from "../interfaces/IPaginated.js";
-import Comision from "../models/Comision.js";
 import { GeneralDeputy } from "../models/estandar/GeneralDeputy.js";
 import { GeneralPaginated } from "../models/estandar/GeneralPaginated.js";
 import { IDeputy } from "../models/interfaces/IDeputy.js";

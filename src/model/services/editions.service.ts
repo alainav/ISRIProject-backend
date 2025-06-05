@@ -1,9 +1,9 @@
-import { List } from "../../../utils/List.js";
+import { List } from "../../utils/List.js";
 import {
   calcularOffset,
   calcularPaginas,
   milisecondsToDays,
-} from "../../../utils/utils.js";
+} from "../../utils/utils.js";
 import { IEditionsRequest } from "../interfaces/IEditionsRequest.js";
 import { IEditionsResponse } from "../interfaces/IEditionsResponse.js";
 import { IGeneralResponse } from "../interfaces/IGeneralResponse.js";
