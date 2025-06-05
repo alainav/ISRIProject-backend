@@ -4,6 +4,7 @@ import { createListDeputiesRoutes } from "./list-deputies.routes.js";
 import { createCommissionsRoutes } from "./commission.routes.js";
 import { createEditionsRoutes } from "./editions.routes.js";
 import { createVotingRoutes } from "./voting.routes.js";
+import { createContriesRoutes } from "./country.routes.js";
 
 export const createRoutes = () => {
   const router = Router();
@@ -14,6 +15,7 @@ export const createRoutes = () => {
   router.use("/commission", createCommissionsRoutes());
   router.use("/editions", createEditionsRoutes());
   router.use("/voting", createVotingRoutes());
+  router.use("/country", createContriesRoutes());
 
   return router;
 };
