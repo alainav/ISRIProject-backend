@@ -16,6 +16,7 @@ import { createToken } from "../utils/generateJWT.js";
 import { comparePassword } from "../utils/hashearPassword.js";
 import { IGeneralResponse } from "../interfaces/IGeneralResponse.js";
 import GeneralResponse from "../models/estandar/GeneralResponse.js";
+import { ICountry } from "../interfaces/ICountry.js";
 
 export class AuthService {
   async loginService(requestData: ILoginRequest): Promise<ILoginResponse> {
@@ -29,24 +30,21 @@ export class AuthService {
 
       if (!requestData.code_access)
         throw new Error(`El código de acceso (code_access) es obligatorio`);
-
-      console.log(
-        "CODIGO",
-        requestData.code_access,
-        user.c_acceso,
-        comparePassword(requestData.code_access, user.c_acceso)
-      );
       if (comparePassword(requestData.code_access, user.c_acceso)) {
         const token = await createToken(
           requestData.userName,
           user.id_rol,
           user.correo
         );
+
+        const role = await Rol.findByPk(user.id_rol);
+        const country = await Pais.findByPk(user.id_pais);
         return {
           success: true,
           message: "Acceso Concedido",
           token,
-          role: user.dataValues.id_rol.toString(),
+          role: role?.nombre,
+          country: country?.nombre,
         };
       } else {
         return {
@@ -159,11 +157,15 @@ export class AuthService {
         countryName,
       } = data;
       // 1. Buscar entidades relacionadas
-      const representante = await Representante.findByPk(email);
+      const representante = await Representante.findOne({
+        where: {
+          usuario: userName,
+        },
+      });
 
       if (!representante) {
         throw new Error(
-          `El correo ${email} no se encuentra asociado a ningun representante`
+          `El usuario ${userName} no se encuentra asociado a ningun representante`
         );
       }
 
@@ -210,14 +212,18 @@ export class AuthService {
     }
   }
 
-  async deleteDeputyService(email: string): Promise<IGeneralResponse> {
+  async deleteDeputyService(userName: string): Promise<IGeneralResponse> {
     try {
       // 1. Buscar entidades relacionadas
-      const representante = await Representante.findByPk(email);
+      const representante = await Representante.findOne({
+        where: {
+          usuario: userName,
+        },
+      });
 
       if (!representante) {
         throw new Error(
-          `El correo ${email} no se encuentra asociado a ningun representante`
+          `El usuario ${userName} no se encuentra asociado a ningun representante`
         );
       }
 
@@ -260,6 +266,41 @@ export class AuthService {
         `Representante ${representante.p_nombre} ${
           representante.p_apellido
         } activado, expira el ${f_expiracion.toUTCString()}`
+      );
+      // 5. Retornar respuesta
+      return response.data;
+    } catch (error: any) {
+      console.error("Error en servicio de reactivación:", error);
+
+      throw error;
+    }
+  }
+
+  async getDeputyCountryService(userName: string): Promise<IGeneralResponse> {
+    try {
+      // 1. Buscar entidades relacionadas
+      const representante = await Representante.findOne({
+        where: { usuario: userName },
+      });
+
+      if (!representante) {
+        throw new Error(
+          `El usuario ${userName} no se encuentra asociado a ningun representante`
+        );
+      }
+
+      const country = await Pais.findByPk(representante.id_pais);
+
+      const deputyCountry = {
+        id: country?.id_pais,
+        name: country?.nombre,
+      };
+
+      const response = new GeneralResponse(
+        true,
+        "Pais del usuario",
+        undefined,
+        deputyCountry
       );
       // 5. Retornar respuesta
       return response.data;

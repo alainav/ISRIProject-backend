@@ -316,7 +316,6 @@ export class VotingService {
       }
 
       const { aFavor, enContra, abstencion } = await this.contarVotos(id);
-      console.log(aFavor, enContra, abstencion);
 
       await votacion.update({
         a_favor: aFavor,
@@ -324,9 +323,25 @@ export class VotingService {
         abstencion,
       });
 
+      const paises = await Comision_Pais.findAll({
+        where: {
+          id_comision: votacion.id_comision,
+        },
+      });
+
+      const countries = paises.map(async (p) => {
+        const pais = await Pais.findByPk(p.id_pais);
+        if (!pais) {
+          throw new Error("BAD ERROR, found not country");
+        }
+        return pais.nombre;
+      });
+
       const response = new GeneralResponse(
         true,
-        `Voto ${vote} ejecutado por ${pais?.nombre}`
+        `Voto ${vote} ejecutado por ${pais?.nombre}`,
+        undefined,
+        await Promise.all(countries)
       );
       // 5. Retornar respuesta
       return response.data;
@@ -349,6 +364,10 @@ export class VotingService {
 
       const pais = await Comision_Pais.findAll({
         where: { id_comision: votacion.id_comision },
+        include: {
+          model: Pais,
+        },
+        order: [[Pais, "nombre", "ASC"]],
       });
 
       const lista = new List<IVote>();

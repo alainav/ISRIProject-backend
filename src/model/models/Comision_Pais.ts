@@ -9,6 +9,7 @@ import Pais from "./Pais.js";
 import Votacion from "./Votacion.js";
 import Representante from "./Representante.js";
 import Edicion from "./Edicion.js";
+import Comision from "./Comision.js";
 
 class Comision_Pais extends Model<
   InferAttributes<Comision_Pais>,
@@ -17,6 +18,7 @@ class Comision_Pais extends Model<
   "id"?: number;
   "id_comision": number;
   "id_pais": number;
+  "Pai"?: Pais;
 }
 
 Comision_Pais.init(
@@ -42,5 +44,12 @@ Comision_Pais.init(
     timestamps: false,
   }
 );
+
+Comision.hasMany(Comision_Pais, {
+  foreignKey: "id_comision",
+  onDelete: "CASCADE",
+});
+Pais.hasMany(Comision_Pais, { foreignKey: "id_pais", onDelete: "CASCADE" });
+Comision_Pais.belongsTo(Pais, { foreignKey: "id_pais", onDelete: "CASCADE" });
 
 export default Comision_Pais;

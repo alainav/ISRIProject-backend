@@ -39,6 +39,11 @@ export const createAuthRoutes = (): Router => {
     [authValidators.comprobateIdDeputy, authValidators.verifyAccessByToken],
     controller.reactivateController
   );
+  router.patch(
+    "/country",
+    [authValidators.verifyAccessByTokenAndContinue],
+    controller.countryController
+  );
 
   return router;
 };

@@ -3,4 +3,6 @@ export interface IEditionsRequest {
   name: string;
   initial_date: Date;
   end_date: Date;
+  president: string;
+  secretary: string;
 }

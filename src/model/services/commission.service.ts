@@ -39,11 +39,11 @@ export class CommissionServices {
       }
 
       const representante = await Representante.findAll({
-        where: { correo: { [Op.or]: [president, secretary] } },
+        where: { usuario: { [Op.or]: [president, secretary] } },
       });
 
       if (!representante) {
-        throw new Error("No existe el correo enviado");
+        throw new Error("No existe el usuario enviado");
       }
       const comision = await Comision.create({
         nombre: name,

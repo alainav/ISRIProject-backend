@@ -17,7 +17,7 @@ class Comision extends Model<
 > {
   "id_comision"?: number;
   "nombre": string;
-  "id_edicion": number;
+  "id_edicion"?: number;
   "presidente": string;
   "secretario": string;
 }
@@ -53,8 +53,6 @@ Comision.init(
     timestamps: false,
   }
 );
-
-Pais.hasMany(Comision_Pais, { foreignKey: "id_comision", onDelete: "CASCADE" });
 
 Edicion.hasMany(Comision, { foreignKey: "id_edicion", onDelete: "CASCADE" });
 Comision.belongsTo(Edicion, { foreignKey: "id_edicion", onDelete: "CASCADE" });

@@ -58,6 +58,4 @@ Representante.belongsTo(Pais, {
   foreignKey: "id_pais",
 });
 
-Pais.hasMany(Comision_Pais, { foreignKey: "id_pais", onDelete: "CASCADE" });
-
 export default Pais;

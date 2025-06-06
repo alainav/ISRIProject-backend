@@ -8,15 +8,17 @@ import { IEditionsRequest } from "../interfaces/IEditionsRequest.js";
 import { IEditionsResponse } from "../interfaces/IEditionsResponse.js";
 import { IGeneralResponse } from "../interfaces/IGeneralResponse.js";
 import { IPaginated } from "../interfaces/IPaginated.js";
+import Comision from "../models/Comision.js";
 import Edicion from "../models/Edicion.js";
 import { GeneralPaginated } from "../models/estandar/GeneralPaginated.js";
+import { CommissionServices } from "./commission.service.js";
 
 export class EditionService {
   async registerEditionService(
     data: IEditionsRequest
   ): Promise<IEditionsResponse> {
     try {
-      const { name, initial_date, end_date } = data;
+      const { name, initial_date, end_date, president, secretary } = data;
 
       const duracion = milisecondsToDays(
         new Date(end_date).getTime() - new Date(initial_date).getTime()
@@ -26,6 +28,19 @@ export class EditionService {
         f_fin: end_date,
         f_inicio: initial_date,
         nombre: name,
+      });
+
+      if (!edition) {
+        throw new Error("Bad edition creation");
+      }
+
+      const commissionServices = new CommissionServices();
+      await commissionServices.registerCommissionService({
+        countries: [0],
+        edition: edition.id_edicion,
+        name: "Asamblea General",
+        president,
+        secretary,
       });
 
       return {
@@ -67,7 +82,7 @@ export class EditionService {
           );
         } else {
           duracion = milisecondsToDays(
-            new Date(edition.f_fin).getTime() - new Date(initial_date).getTime()
+            new Date(end_date).getTime() - new Date(initial_date).getTime()
           );
         }
       }
@@ -97,6 +112,7 @@ export class EditionService {
   async deleteEditionService(id: number): Promise<IGeneralResponse> {
     try {
       await Edicion.destroy({ where: { id_edicion: id } });
+      await Comision.destroy({ where: { id_edicion: id } });
 
       return {
         success: true,

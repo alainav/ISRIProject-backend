@@ -38,7 +38,7 @@ export class DeputyControllers extends GeneralError {
   deleteController = async (req: Request, res: Response) => {
     try {
       const response = await this.authService.deleteDeputyService(
-        req.params.email
+        req.params.userName
       );
       res.status(response.success ? 200 : 500).json(response);
     } catch (error: any) {
@@ -50,6 +50,17 @@ export class DeputyControllers extends GeneralError {
     try {
       const response = await this.authService.reactivateDeputyService(
         req.body.email
+      );
+      res.status(response.success ? 200 : 400).json(response);
+    } catch (error: any) {
+      this.generalError(res, error.message);
+    }
+  };
+
+  countryController = async (req: Request, res: Response) => {
+    try {
+      const response = await this.authService.getDeputyCountryService(
+        req.body.actualUser.userName
       );
       res.status(response.success ? 200 : 400).json(response);
     } catch (error: any) {

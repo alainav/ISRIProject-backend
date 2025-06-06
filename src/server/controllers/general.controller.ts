@@ -65,31 +65,37 @@ export class SocketsPersonalizados implements CustomSocket {
   }
 }
 
+let actualSocket: Socket;
+let actualIO: Server;
 // Tipar los manejadores de eventos
 type EventHandler = (this: Socket, ...args: any[]) => void;
 const EVENT_HANDLERS: Record<string, EventHandler> = {
+  //Eventos asociados a los representantes
   authenticate,
   "create-deputy": create_deputy,
   "update-deputy": update_deputy,
   "delete-deputy": delete_deputy,
-  "list-all-deputies": list_all_deputies,
   "activate-deputy": activate_deputy,
+  "list-all-deputies": list_all_deputies,
   "get-list-deputies": get_list_deputies,
   "get-list-commissions-presidents": get_list_commissions_presidents,
   "get-list-commissions-secretaries": get_list_commissions_secretaries,
   "get-list-general-presidents": get_list_general_presidents,
   "get-list-general-secretaries": get_list_general_secretaries,
 
+  //Peticiones asociadas a la creacion de una edicion
   "create-edition": create_edition,
   "update-edition": update_edition,
   "delete-edition": delete_edition,
   "list-editions": list_editions,
 
+  //Peticiones asociadas a la creación de comisiones
   "create-commission": create_commission,
   "update-commission": update_commission,
   "delete-commission": delete_commission,
   "list-commissions": list_commissions,
 
+  //Peticiones asociadas a los votos
   "create-voting": create_voting,
   "update-voting": update_voting,
   "list-voting": list_voting,
@@ -116,6 +122,9 @@ const generalController = (socket: Socket, io: Server): void => {
 
     existingRooms.forEach((room) => socket.join(room));
   }
+
+  actualSocket = socket;
+  actualIO = io;
 
   sockets.set(identity, new SocketsPersonalizados(socket, io, identity));
   io.emit("online-count", online);
@@ -250,7 +259,21 @@ const assignIdentity = (socket: Socket): string => {
   return identity;
 };
 
-export const getSockets = (identity: string): CustomSocket | undefined =>
-  sockets.get(identity);
+export const getSockets = (identity: string): CustomSocket | undefined => {
+  let so = sockets.get(identity.toString());
+  if (!so) {
+    actualSocket.handshake.query.identity = identity;
+    const newIdentity = assignIdentity(actualSocket);
+    sockets.set(
+      newIdentity,
+      new SocketsPersonalizados(actualSocket, actualIO, newIdentity)
+    );
+    console.log(`🔄 ${identity} → ${newIdentity}`);
+    identity = newIdentity;
+    so = new SocketsPersonalizados(actualSocket, actualIO, newIdentity);
+  }
+
+  return so;
+};
 
 export default generalController;

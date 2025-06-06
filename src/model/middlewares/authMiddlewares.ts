@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, response, Response } from "express";
 import Representante from "../models/Representante.js";
 import Rol from "../models/Rol.js";
 import Pais from "../models/Pais.js";
@@ -114,6 +114,11 @@ const verifyAccessByToken = async (
     res.status(400).json({ success, message });
     return;
   }
+
+  req.body.decodedToken = {
+    userName,
+    roleName,
+  };
 
   if (deputyUserName && userName && roleName) {
     if (deputyUserName !== userName && rolesInválidos.includes(roleName)) {

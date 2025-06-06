@@ -5,19 +5,33 @@ import { CRUDOperations } from "../../utils/API.js";
 export const create_edition = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("POST", "i/login", data, callback);
+) => CRUDOperations("POST", "editions/register", data, callback);
 
 export const update_edition = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("PUT", "i/login", data, callback);
+) => {
+  const { id } = data;
+  CRUDOperations("PUT", `editions/update/${id}`, data, callback);
+};
 
 export const delete_edition = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("DELETE", "i/login", data, callback);
+) => {
+  const { id } = data;
+  CRUDOperations("DELETE", `editions/delete/${id}`, data, callback);
+};
 
 export const list_editions = (
   data: ControllerData,
   callback: CallbackFunction
-) => CRUDOperations("GET", "i/login", data, callback);
+) => {
+  const { page } = data;
+  CRUDOperations(
+    "PATCH",
+    `editions${page ? `?page=${page}` : ""}`,
+    data,
+    callback
+  );
+};
