@@ -16,9 +16,9 @@ export class ListDeputyService {
     const allDeputies = await Representante.findAndCountAll({
       offset,
       limit: 10,
-      where: {
+      /*where: {
         estado: true,
-      },
+      },*/
     });
 
     const preparer = new PrepareListsDeputies();
@@ -105,6 +105,9 @@ class PrepareListsDeputies {
         second_name: dep.s_nombre,
         first_surname: dep.p_apellido,
         second_surname: dep.s_apellido,
+        name: `${dep.p_nombre}${dep.s_nombre ? ` ${dep.s_nombre}` : ""} ${
+          dep.p_apellido
+        } ${dep.s_apellido}`,
       };
       //Necesario para construir el objeto de role
       const roleName = await Rol.findByPk(dep.id_rol);

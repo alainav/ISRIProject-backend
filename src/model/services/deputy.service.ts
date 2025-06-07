@@ -144,9 +144,9 @@ export class AuthService {
     data: IRegisterUserRequest
   ): Promise<IRegistrerResponse> {
     try {
-      const {
+      let {
         userName,
-        email,
+        name,
         first_name,
         second_name,
         first_surname,
@@ -156,6 +156,14 @@ export class AuthService {
         country,
         countryName,
       } = data;
+
+      if (name) {
+        (first_name = name.first_name),
+          (second_name = name.second_name),
+          (first_surname = name.first_surname),
+          (second_surname = name.second_surname);
+      }
+
       // 1. Buscar entidades relacionadas
       const representante = await Representante.findOne({
         where: {

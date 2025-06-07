@@ -18,11 +18,13 @@ import Representante from "../models/Representante.js";
 import { Op } from "sequelize";
 import { GeneralPaginated } from "../models/estandar/GeneralPaginated.js";
 import { IPaginated } from "../interfaces/IPaginated.js";
+import { sequelize } from "../config/databaseConection.js";
 
 export class CommissionServices {
   async registerCommissionService(
     requestData: IRegistrerCommission
   ): Promise<ICommission> {
+    const transaction = await sequelize.transaction();
     try {
       let { name, countries, edition, president, secretary } = requestData;
 
@@ -45,12 +47,15 @@ export class CommissionServices {
       if (!representante) {
         throw new Error("No existe el usuario enviado");
       }
-      const comision = await Comision.create({
-        nombre: name,
-        id_edicion: edition,
-        presidente: president,
-        secretario: secretary,
-      });
+      const comision = await Comision.create(
+        {
+          nombre: name,
+          id_edicion: edition,
+          presidente: president,
+          secretario: secretary,
+        },
+        { transaction }
+      );
 
       if (!comision.id_comision) {
         throw new Error("Problemas al crear la comision");
@@ -72,10 +77,13 @@ export class CommissionServices {
           throw new Error(`ID ${c} no encontrado en los Paises`);
         }
 
-        await Comision_Pais.create({
-          id_comision: comision.id_comision,
-          id_pais: c,
-        });
+        await Comision_Pais.create(
+          {
+            id_comision: comision.id_comision,
+            id_pais: c,
+          },
+          { transaction }
+        );
 
         const element = {
           country: {
@@ -86,6 +94,7 @@ export class CommissionServices {
         result.add(element);
       }
 
+      await transaction.commit();
       return {
         success: true,
         message: "Comisión agregada con éxito",
@@ -96,7 +105,7 @@ export class CommissionServices {
       };
     } catch (error: any) {
       console.error("Error en servicio de comisiones:", error);
-
+      await transaction.rollback();
       throw error;
     }
   }

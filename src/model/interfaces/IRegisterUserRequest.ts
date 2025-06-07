@@ -12,4 +12,10 @@ export interface IRegisterUserRequest extends IToken {
   country: number;
   countryName?: string;
   commission: number | null;
+  name?: {
+    first_name: string;
+    second_name: string;
+    first_surname: string;
+    second_surname: string;
+  };
 }

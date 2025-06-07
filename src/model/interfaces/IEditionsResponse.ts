@@ -6,4 +6,8 @@ export interface IEditionsResponse extends IGeneralResponse {
   initial_date: Date;
   end_date: Date;
   duration: number;
+  president: string;
+  presidentUserName?: string;
+  secretary: string;
+  secretaryUserName?: string;
 }

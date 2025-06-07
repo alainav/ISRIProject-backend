@@ -1,3 +1,4 @@
+import { Op, Transaction } from "sequelize";
 import { List } from "../../utils/List.js";
 import {
   calcularOffset,
@@ -11,29 +12,36 @@ import { IPaginated } from "../interfaces/IPaginated.js";
 import Comision from "../models/Comision.js";
 import Edicion from "../models/Edicion.js";
 import { GeneralPaginated } from "../models/estandar/GeneralPaginated.js";
+import Representante from "../models/Representante.js";
 import { CommissionServices } from "./commission.service.js";
+import { sequelize } from "../config/databaseConection.js";
 
 export class EditionService {
   async registerEditionService(
     data: IEditionsRequest
   ): Promise<IEditionsResponse> {
+    const transaction = await sequelize.transaction();
     try {
       const { name, initial_date, end_date, president, secretary } = data;
 
       const duracion = milisecondsToDays(
         new Date(end_date).getTime() - new Date(initial_date).getTime()
       );
-      const edition = await Edicion.create({
-        duracion,
-        f_fin: end_date,
-        f_inicio: initial_date,
-        nombre: name,
-      });
+      const edition = await Edicion.create(
+        {
+          duracion,
+          f_fin: end_date,
+          f_inicio: initial_date,
+          nombre: name,
+        },
+        { transaction }
+      );
 
       if (!edition) {
         throw new Error("Bad edition creation");
       }
 
+      await transaction.commit();
       const commissionServices = new CommissionServices();
       await commissionServices.registerCommissionService({
         countries: [0],
@@ -49,11 +57,13 @@ export class EditionService {
         end_date: edition.f_fin,
         initial_date: edition.f_inicio,
         name: edition.nombre,
+        president,
+        secretary,
         success: true,
       };
     } catch (error: any) {
       console.error("Error en servicio de registro de ediciones:", error);
-
+      await transaction.rollback();
       throw error;
     }
   }
@@ -63,7 +73,7 @@ export class EditionService {
     data: IEditionsRequest
   ): Promise<IEditionsResponse> {
     try {
-      const { name, initial_date, end_date } = data;
+      const { name, initial_date, end_date, president, secretary } = data;
 
       const edition = await Edicion.findByPk(id);
       if (!edition) {
@@ -93,12 +103,30 @@ export class EditionService {
         nombre: name,
       });
 
+      if (president || secretary) {
+        const commission = await Comision.findOne({
+          where: {
+            id_edicion: edition.id_edicion,
+            nombre: { [Op.iRegexp]: "Asamblea General" },
+          },
+        });
+
+        if (!commission) {
+          throw new Error("Bad Error, Not Commission Found");
+        }
+
+        await commission.update({
+          presidente: president,
+          secretario: secretary,
+        });
+      }
+
+      const exitEdition = await new PrepareListsEditions().prepareUnique(
+        edition
+      );
+
       return {
-        id_edition: edition.id_edicion,
-        duration: edition.duracion,
-        end_date: edition.f_fin,
-        initial_date: edition.f_inicio,
-        name: edition.nombre,
+        ...exitEdition,
         success: true,
         message: `Edición ${edition.nombre} modificada`,
       };
@@ -135,7 +163,11 @@ export class EditionService {
       const editions = await Edicion.findAndCountAll({
         offset,
         limit: 10,
-        order: [["f_inicio", "DESC"]],
+        order: [
+          ["f_inicio", "ASC"],
+          ["f_fin", "ASC"],
+          ["nombre", "ASC"],
+        ],
       });
 
       const paginas = calcularPaginas(editions.count, 10);
@@ -145,7 +177,7 @@ export class EditionService {
         page
       );
 
-      const preparedEditions = new PrepareListsEditions().prepare(
+      const preparedEditions = await new PrepareListsEditions().prepare(
         editions.rows
       );
       return {
@@ -164,22 +196,53 @@ export class EditionService {
 class PrepareListsEditions {
   editions: IEditionsResponse[] = [];
 
-  prepare(editions: Edicion[]): IEditionsResponse[] {
+  async prepare(editions: Edicion[]): Promise<IEditionsResponse[]> {
     const listEditions = new List<IEditionsResponse>();
     for (let ed of editions) {
       //Necesario para construir el objeto
-      const preparedEdition = {
-        id_edition: ed.id_edicion,
-        name: ed.nombre,
-        initial_date: ed.f_inicio,
-        end_date: ed.f_fin,
-        duration: ed.duracion,
-        success: true,
-      };
+      const preparedEdition = await this.prepareUnique(ed);
 
       listEditions.add(preparedEdition);
     }
 
     return listEditions.elements;
+  }
+
+  async prepareUnique(edition: Edicion): Promise<IEditionsResponse> {
+    const commission = await Comision.findOne({
+      where: {
+        id_edicion: edition.id_edicion,
+        nombre: { [Op.iRegexp]: "Asamblea General" },
+      },
+    });
+
+    let president, secretary;
+    if (commission) {
+      president = await Representante.findOne({
+        where: { usuario: commission.presidente },
+      });
+      secretary = await Representante.findOne({
+        where: { usuario: commission.secretario },
+      });
+    }
+    //Necesario para construir el objeto
+    const preparedEdition = {
+      id_edition: edition.id_edicion,
+      name: edition.nombre,
+      initial_date: edition.f_inicio,
+      end_date: edition.f_fin,
+      duration: edition.duracion,
+      success: true,
+      president: president
+        ? `${president?.p_nombre} ${president?.p_apellido}`
+        : "No encontrado",
+      presidentUserName: president?.usuario,
+      secretary: secretary
+        ? `${secretary?.p_nombre} ${secretary?.p_apellido}`
+        : "No encontrado",
+      secretaryUserName: secretary?.usuario,
+    };
+
+    return preparedEdition;
   }
 }

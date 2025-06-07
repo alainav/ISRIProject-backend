@@ -6,8 +6,10 @@ import { IPaginated } from "../interfaces/IPaginated.js";
 import { ICountry } from "../interfaces/ICountry.js";
 import { Request } from "express";
 import { Op } from "sequelize";
+import { IRole } from "../models/interfaces/IRole.js";
+import Rol from "../models/Rol.js";
 
-export class CountryServices {
+export class SpecialsServices {
   async listCountriesService(
     page: number = 1,
     req: Request
@@ -52,6 +54,60 @@ export class CountryServices {
       return {
         success: true,
         countries: countries.elements,
+        paginated: paginated.data,
+      };
+    } catch (error: any) {
+      console.error("Error en servicio de listar paises:", error);
+
+      throw error;
+    }
+  }
+
+  async listRolesService(
+    page: number = 1,
+    req: Request
+  ): Promise<{
+    roles: IRole[];
+    paginated: IPaginated;
+    success: boolean;
+  }> {
+    try {
+      const offset = calcularOffset(page, 10);
+
+      let options = {};
+      if (req.query.name) {
+        options = {
+          where: {
+            nombre: { [Op.iRegexp]: req.query.name },
+          },
+        };
+      }
+      const rol = await Rol.findAndCountAll({
+        limit: 10,
+        offset,
+        ...options,
+      });
+
+      const roles = new List<IRole>();
+      for (let r of rol.rows) {
+        if (!r) {
+          throw new Error("Bad, Error");
+        }
+
+        const role = {
+          id: Number(r.id_rol),
+          name: r.nombre,
+        };
+
+        roles.add(role);
+      }
+
+      const { totalPages, totalRecords } = calcularPaginas(rol.count, 10);
+      const paginated = new GeneralPaginated(totalPages, totalRecords, page);
+
+      return {
+        success: true,
+        roles: roles.elements,
         paginated: paginated.data,
       };
     } catch (error: any) {

@@ -43,6 +43,7 @@ import PingData from "../interfaces/PingData.js";
 import { minutesToMiliseconds } from "../../utils/utils.js";
 import { generateRandomNumberExtended } from "../helpers/estandarizadores.js";
 import { modifyOnlineUsers, online, sockets, usersRooms } from "../onlines.js";
+import { get_countries, get_roles } from "./specials.controller.js";
 
 export class SocketsPersonalizados implements CustomSocket {
   socket: Socket;
@@ -67,6 +68,7 @@ export class SocketsPersonalizados implements CustomSocket {
 
 let actualSocket: Socket;
 let actualIO: Server;
+let count: number = 0;
 // Tipar los manejadores de eventos
 type EventHandler = (this: Socket, ...args: any[]) => void;
 const EVENT_HANDLERS: Record<string, EventHandler> = {
@@ -103,6 +105,10 @@ const EVENT_HANDLERS: Record<string, EventHandler> = {
   "change-status-voting": change_status_voting,
   "execute-vote": execute_vote,
   "show-monitor": show_monitor,
+
+  //Peticiones de apoyo o especiales
+  "get-countries": get_countries,
+  "get-roles": get_roles,
 };
 
 const sensibles: string[] = ["authenticate", "execute-vote"];
@@ -155,6 +161,8 @@ const generalController = (socket: Socket, io: Server): void => {
 
   // Limpieza de sockets inactivos
   const inactivityInterval = setInterval(() => {
+    count++;
+    console.log("REVISANDO", count);
     sockets.forEach((socketObj, key) => {
       if (socketObj.timeDisconnected > 300000) {
         sockets.delete(key);
@@ -162,7 +170,7 @@ const generalController = (socket: Socket, io: Server): void => {
         console.log(`⌛ Eliminado socket ${key} por inactividad`);
       }
     });
-  }, minutesToMiliseconds(5));
+  }, minutesToMiliseconds(3));
 
   // Evento ping
   socket.on("ping", (rawData: string) => {

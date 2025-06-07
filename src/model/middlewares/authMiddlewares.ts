@@ -45,6 +45,14 @@ const verifyIdRole = async (
 ) => {
   const { role } = req.body;
 
+  if (!role) {
+    res.status(400).json({
+      message: `ID del Rol (role) es obligatorio`,
+      success: false,
+    });
+    return;
+  }
+
   const rol = await Rol.findByPk(role);
 
   if (!rol) {
