@@ -3,6 +3,8 @@ import { List } from "../../utils/List.js";
 import {
   calcularOffset,
   calcularPaginas,
+  getFechaCuba,
+  getFechaCubaText,
   milisecondsToDays,
 } from "../../utils/utils.js";
 import { IEditionsRequest } from "../interfaces/IEditionsRequest.js";
@@ -191,6 +193,33 @@ export class EditionService {
       throw error;
     }
   }
+
+  async listEditionActiveService(): Promise<{
+    editions: IEditionsResponse[];
+    success: boolean;
+  }> {
+    try {
+      const editions = await Edicion.findAndCountAll({
+        order: [
+          ["f_fin", "DESC"],
+          ["f_inicio", "ASC"],
+          ["nombre", "ASC"],
+        ],
+      });
+
+      const preparedEditions = await new PrepareListsEditions().prepare(
+        editions.rows
+      );
+      return {
+        editions: preparedEditions,
+        success: true,
+      };
+    } catch (error: any) {
+      console.error("Error en servicio de listar ediciones:", error);
+
+      throw error;
+    }
+  }
 }
 
 class PrepareListsEditions {
@@ -241,6 +270,7 @@ class PrepareListsEditions {
         ? `${secretary?.p_nombre} ${secretary?.p_apellido}`
         : "No encontrado",
       secretaryUserName: secretary?.usuario,
+      cubaDate: getFechaCubaText(),
     };
 
     return preparedEdition;

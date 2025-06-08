@@ -35,3 +35,10 @@ export const list_editions = (
     callback
   );
 };
+
+export const list_active_editions = (
+  data: ControllerData,
+  callback: CallbackFunction
+) => {
+  CRUDOperations("PATCH", `editions/active`, data, callback);
+};

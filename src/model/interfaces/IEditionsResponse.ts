@@ -10,4 +10,5 @@ export interface IEditionsResponse extends IGeneralResponse {
   presidentUserName?: string;
   secretary: string;
   secretaryUserName?: string;
+  cubaDate?: string;
 }

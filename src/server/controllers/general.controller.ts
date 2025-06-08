@@ -18,6 +18,7 @@ import {
   update_edition,
   delete_edition,
   list_editions,
+  list_active_editions,
 } from "./edition.controller.js";
 
 import {
@@ -90,6 +91,7 @@ const EVENT_HANDLERS: Record<string, EventHandler> = {
   "update-edition": update_edition,
   "delete-edition": delete_edition,
   "list-editions": list_editions,
+  "list-active-editions": list_active_editions,
 
   //Peticiones asociadas a la creación de comisiones
   "create-commission": create_commission,

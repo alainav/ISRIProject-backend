@@ -1,20 +1,19 @@
 import { NextFunction, Request, Response } from "express";
 import Comision from "../models/Comision.js";
 import Edicion from "../models/Edicion.js";
-import { getFechaCuba } from "../../utils/utils.js";
+import { getFechaCuba, getFechaCubaText } from "../../utils/utils.js";
 import GeneralResponse from "../models/estandar/GeneralResponse.js";
 import Votacion from "../models/Votacion.js";
 
-let flag = true;
 const verifyCommissionOperation = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   let { id } = req.params;
-  const { auxId } = req.body;
+  const { idCommission } = req.body;
 
-  id = auxId ? auxId : id;
+  id = idCommission ? idCommission : id;
 
   const comision = await Comision.findByPk(id);
 
@@ -24,24 +23,10 @@ const verifyCommissionOperation = async (
       `Operación denegada. ID ${id} no encontrado en comisiones`
     );
     res.status(400).json(response);
-    flag = false;
     return;
   }
 
-  req.body.auxId = comision.id_edicion;
-
-  await verifyEditionOperation(req, res, next);
-
-  req.body.auxId = undefined;
-
-  if (!flag && !auxId) {
-    flag = true;
-    return;
-  }
-
-  if (auxId) {
-    return;
-  }
+  req.body.idEdicion = comision.id_edicion;
 
   return next();
 };
@@ -82,16 +67,7 @@ const verifyVotingOperation = async (
     return;
   }
 
-  req.body.auxId = voting.id_comision;
-
-  await verifyCommissionOperation(req, res, next);
-
-  req.body.auxId = undefined;
-
-  if (!flag) {
-    flag = true;
-    return;
-  }
+  req.body.idCommission = voting.id_comision;
 
   return next();
 };
@@ -102,9 +78,9 @@ const verifyEditionOperation = async (
   next: NextFunction
 ) => {
   let { id } = req.params;
-  const { auxId } = req.body;
+  const { idEdicion } = req.body;
 
-  id = auxId ? auxId : id;
+  id = idEdicion ? idEdicion : id;
   const edition = await Edicion.findByPk(id);
   if (!edition) {
     const response = new GeneralResponse(
@@ -112,11 +88,16 @@ const verifyEditionOperation = async (
       `Operación denegada. ID ${id} no encontrado en las ediciones`
     );
     res.status(400).json(response);
-    flag = false;
     return;
   }
 
-  if (getFechaCuba().getTime() > new Date(edition.f_fin).getTime()) {
+  console.log(
+    new Date(getFechaCubaText()).getTime() > new Date(edition.f_fin).getTime()
+  );
+
+  if (
+    new Date(getFechaCubaText()).getTime() > new Date(edition.f_fin).getTime()
+  ) {
     const response = new GeneralResponse(
       false,
       `Operación denegada. Todas las operaciones de escritura sobre la edición ${
@@ -126,11 +107,6 @@ const verifyEditionOperation = async (
       ).toLocaleDateString()}`
     );
     res.status(400).json(response);
-    flag = false;
-    return;
-  }
-
-  if (auxId) {
     return;
   }
 

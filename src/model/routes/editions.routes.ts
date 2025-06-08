@@ -34,6 +34,12 @@ export const createEditionsRoutes = (): Router => {
   );
 
   router.patch(
+    "/active",
+    [authValidators.verifyAccessByTokenAndContinue],
+    controller.listSpecialController
+  );
+
+  router.patch(
     "/",
     [authValidators.verifyAccessByTokenAndContinue],
     controller.listController

@@ -20,6 +20,7 @@ export const createCommissionsRoutes = (): Router => {
     [
       authValidators.verifyAccessByToken,
       generalMiddlewares.verifyCommissionOperation,
+      generalMiddlewares.verifyEditionOperation,
     ],
     controller.updateController
   );
@@ -29,6 +30,7 @@ export const createCommissionsRoutes = (): Router => {
     [
       authValidators.verifyAccessByToken,
       generalMiddlewares.verifyCommissionOperation,
+      generalMiddlewares.verifyEditionOperation,
     ],
     controller.deleteController
   );

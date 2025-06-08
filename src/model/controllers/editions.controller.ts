@@ -53,4 +53,13 @@ export class EditionsController extends GeneralError {
       this.generalError(res, error.message);
     }
   };
+
+  listSpecialController = async (req: Request, res: Response) => {
+    try {
+      const response = await this.editionService.listEditionActiveService();
+      res.status(response.success ? 200 : 500).json(response);
+    } catch (error: any) {
+      this.generalError(res, error.message);
+    }
+  };
 }

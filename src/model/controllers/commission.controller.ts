@@ -46,12 +46,13 @@ export class CommissionControllers extends GeneralError {
   listController = async (req: Request, res: Response) => {
     try {
       const { page = 1 } = req.query;
-      const { email } = req.body.actualUser;
+      const { email, roleName } = req.body.actualUser;
       const response = await this.commissionServices.listCommissionsService(
         Number(page?.toString()),
-        email
+        email,
+        roleName
       );
-      res.json(response);
+      res.json({ ...response, paginated: response.paginated.paginated });
     } catch (error: any) {
       this.generalError(res, error.message);
     }

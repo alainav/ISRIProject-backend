@@ -6,4 +6,10 @@ export interface ICommission extends IGeneralResponse {
   name: string;
   countries: ICommissionElement[];
   edition: string;
+  numOfCountries: number;
+  votes?: number;
+  president?: string;
+  presidentUserName?: string;
+  secretary?: string;
+  secretaryUserName?: string;
 }

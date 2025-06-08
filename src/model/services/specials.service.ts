@@ -8,6 +8,7 @@ import { Request } from "express";
 import { Op } from "sequelize";
 import { IRole } from "../models/interfaces/IRole.js";
 import Rol from "../models/Rol.js";
+import Representante from "../models/Representante.js";
 
 export class SpecialsServices {
   async listCountriesService(
@@ -30,8 +31,6 @@ export class SpecialsServices {
         };
       }
       const pais = await Pais.findAndCountAll({
-        limit: 10,
-        offset,
         ...options,
       });
 
@@ -40,9 +39,18 @@ export class SpecialsServices {
         if (!c) {
           throw new Error("Bad, Error");
         }
+
+        const deputy = await Representante.findOne({
+          where: { id_pais: c.id_pais, estado: true },
+          order: [["f_registro", "DESC"]],
+        });
+
         const country = {
           id: Number(c.id_pais),
           name: c.nombre,
+          deputy: deputy
+            ? `${deputy?.p_nombre} ${deputy?.p_apellido}`
+            : undefined,
         };
 
         countries.add(country);

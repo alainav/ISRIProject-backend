@@ -15,20 +15,29 @@ import GeneralResponse from "../models/estandar/GeneralResponse.js";
 import { ICommission } from "../models/interfaces/ICommision.js";
 import Pais from "../models/Pais.js";
 import Representante from "../models/Representante.js";
-import { Op } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import { GeneralPaginated } from "../models/estandar/GeneralPaginated.js";
 import { IPaginated } from "../interfaces/IPaginated.js";
 import { sequelize } from "../config/databaseConection.js";
+import Voto from "../models/Voto.js";
+import Votacion from "../models/Votacion.js";
+import { isString } from "class-validator";
 
 export class CommissionServices {
   async registerCommissionService(
-    requestData: IRegistrerCommission
+    requestData: IRegistrerCommission,
+    transaction?: Transaction
   ): Promise<ICommission> {
-    const transaction = await sequelize.transaction();
+    transaction = transaction ? transaction : await sequelize.transaction();
     try {
       let { name, countries, edition, president, secretary } = requestData;
 
-      const edicion = await Edicion.findByPk(edition);
+      let edicion;
+      if (Number.isInteger(edition)) {
+        edicion = await Edicion.findByPk(edition);
+      } else if (isString(edition)) {
+        edicion = await Edicion.findOne({ where: { nombre: edition } });
+      }
 
       if (!edicion) {
         throw new Error(`ID ${edition} no encontrado en ediciones`);
@@ -50,7 +59,7 @@ export class CommissionServices {
       const comision = await Comision.create(
         {
           nombre: name,
-          id_edicion: edition,
+          id_edicion: edicion.id_edicion,
           presidente: president,
           secretario: secretary,
         },
@@ -85,11 +94,19 @@ export class CommissionServices {
           { transaction }
         );
 
+        const deputy = await Representante.findOne({
+          where: { id_pais: c, estado: true },
+          order: [["f_registro", "DESC"]],
+        });
+
+        if (!deputy) {
+          throw new Error("Bad Deputy");
+        }
+
         const element = {
-          country: {
-            id: country.id_pais,
-            name: country.nombre,
-          },
+          id: country.id_pais,
+          name: country.nombre,
+          deputy: `${deputy.p_nombre} ${deputy.p_apellido}`,
         };
         result.add(element);
       }
@@ -101,6 +118,7 @@ export class CommissionServices {
         name: comision.nombre,
         edition: edicion.nombre,
         id_commission: comision.id_comision,
+        numOfCountries: result.elements.length,
         countries: result.elements,
       };
     } catch (error: any) {
@@ -115,7 +133,7 @@ export class CommissionServices {
     data: IRegistrerCommission
   ): Promise<ICommission> {
     try {
-      const { name, countries = [], edition } = data;
+      const { name, countries = [], edition, president, secretary } = data;
 
       const comision = await Comision.findByPk(id);
 
@@ -124,18 +142,28 @@ export class CommissionServices {
       }
 
       let newEdition = "Sin Cambios";
+      let nuevaEdicion = comision.id_edicion;
       if (edition) {
-        const edicion = await Edicion.findByPk(edition);
+        let edicion;
+        if (Number.isInteger(edition)) {
+          edicion = await Edicion.findByPk(edition);
+        } else {
+          edicion = await Edicion.findOne({ where: { nombre: edition } });
+        }
+
         if (!edicion) {
           throw new Error(`ID ${edition} no encontrado en ediciones`);
         }
 
         newEdition = edicion.nombre;
+        nuevaEdicion = edicion.id_edicion;
       }
 
       await comision.update({
         nombre: name,
-        id_edicion: edition,
+        id_edicion: nuevaEdicion,
+        presidente: president,
+        secretario: secretary,
       });
 
       if (countries.length !== 0) {
@@ -155,12 +183,21 @@ export class CommissionServices {
           id_pais: c,
         });
 
+        const deputy = await Representante.findOne({
+          where: { id_pais: c, estado: true },
+          order: [["f_registro", "DESC"]],
+        });
+
+        if (!deputy) {
+          throw new Error("Bad Deputy");
+        }
+
         const element = {
-          country: {
-            id: country.id_pais,
-            name: country.nombre,
-          },
+          id: country.id_pais,
+          name: country.nombre,
+          deputy: `${deputy.p_nombre} ${deputy.p_apellido}`,
         };
+
         result.add(element);
       }
 
@@ -170,6 +207,7 @@ export class CommissionServices {
         name: comision.nombre,
         edition: newEdition,
         id_commission: id,
+        numOfCountries: result.elements.length,
         countries: result.elements,
       };
     } catch (error: any) {
@@ -199,36 +237,57 @@ export class CommissionServices {
 
   async listCommissionsService(
     page: number = 1,
-    email: string
-  ): Promise<{ commissions: ICommission[]; paginated: IPaginated }> {
+    email: string,
+    roleName: string,
+    limit: number = 10
+  ): Promise<{
+    commissions: ICommission[];
+    paginated: IPaginated;
+    totalCountries: number;
+    totalVoting: number;
+  }> {
     try {
-      const offset = calcularOffset(page, 10);
+      const offset = calcularOffset(page, limit);
 
-      const representante = await Representante.findByPk(email);
+      let options = {};
 
-      const comisiones = await Comision_Pais.findAll({
-        where: { id_pais: representante?.id_pais },
-      });
+      if (roleName !== "Administrador") {
+        const representante = await Representante.findByPk(email);
+
+        const comisiones = await Comision_Pais.findAll({
+          where: { id_pais: representante?.id_pais },
+        });
+
+        options = {
+          where: {
+            [Op.or]: [
+              // Debe ser un array de condiciones
+              { presidente: representante?.correo },
+              { secretario: representante?.correo },
+              {
+                id_comision: {
+                  [Op.in]: comisiones.map((e) => {
+                    return e.id_pais;
+                  }),
+                },
+              },
+            ],
+          },
+        };
+      }
 
       const comision = await Comision.findAndCountAll({
-        limit: 10,
+        limit,
         offset,
-        where: {
-          [Op.or]: [
-            // Debe ser un array de condiciones
-            { presidente: representante?.correo },
-            { secretario: representante?.correo },
-            {
-              id_comision: {
-                [Op.in]: comisiones.map((e) => {
-                  return e.id_pais;
-                }),
-              },
-            },
-          ],
-        },
+        order: [
+          ["nombre", "ASC"],
+          ["id_comision", "ASC"],
+        ],
+        ...options,
       });
 
+      let totalCountries = 0;
+      let totalVoting = 0;
       const result = new List<ICommission>();
       for (let elem of comision.rows) {
         if (!elem) {
@@ -244,31 +303,84 @@ export class CommissionServices {
           if (!pais) {
             throw new Error("Bad Country");
           }
+
+          const deputy = await Representante.findOne({
+            where: { id_pais: pais.id_pais, estado: true },
+            order: [["f_registro", "DESC"]],
+          });
+
           const country = {
             id: pais.id_pais,
             name: pais.nombre,
+            deputy: deputy
+              ? `${deputy.p_nombre} ${deputy.p_apellido}`
+              : `Not Found for ${pais.nombre}`,
           };
-          correlacion.add({ country });
+
+          correlacion.add(country);
         }
 
         const edicion = await Edicion.findByPk(elem.id_edicion);
         if (!edicion) {
           throw new Error("BAD Edition");
         }
+
+        const votes = await Votacion.count({
+          where: { id_comision: elem.id_comision },
+        });
+
+        const commission = await Comision.findOne({
+          where: {
+            id_comision: elem.id_comision,
+          },
+        });
+
+        if (!commission) {
+          throw new Error(`Bad Error for Commission ${elem.nombre}`);
+        }
+
+        const president = await Representante.findOne({
+          where: { usuario: commission.presidente },
+        });
+        const secretary = await Representante.findOne({
+          where: { usuario: commission.secretario },
+        });
+
         const response = {
           success: true,
           id_commission: elem.id_comision,
           name: elem.nombre,
           edition: edicion.nombre,
+          votes: votes,
+          president: president
+            ? `${president.p_nombre} ${president.p_apellido}`
+            : "Not Found",
+          presidentUserName: president?.usuario,
+          secretary: secretary
+            ? `${secretary.p_nombre} ${secretary.p_apellido}`
+            : "Not Found",
+          secretaryUserName: secretary?.usuario,
+          numOfCountries: correlacion.elements.length,
           countries: correlacion.elements,
         };
+        //Sumar la cantidad de paises asociados
+        totalCountries += correlacion.elements.length;
+        totalVoting += votes;
         result.add(response);
       }
 
-      const { totalPages, totalRecords } = calcularPaginas(comision.count, 10);
+      const { totalPages, totalRecords } = calcularPaginas(
+        comision.count,
+        limit
+      );
       const paginated = new GeneralPaginated(totalPages, totalRecords, page);
 
-      return { commissions: result.elements, paginated: paginated.data };
+      return {
+        commissions: result.elements,
+        paginated: paginated.data,
+        totalCountries,
+        totalVoting,
+      };
     } catch (error: any) {
       console.error("Error en servicio de listar comisiones:", error);
 
