@@ -66,16 +66,21 @@ Votacion.belongsTo(Comision, {
 });
 
 Comision.hasMany(Representante, {
-  foreignKey: "id_president",
+  foreignKey: "correo",
+  as: "id_president",
 });
-Representante.belongsTo(Comision, {
-  foreignKey: "id_president",
+Representante.hasOne(Comision, {
+  foreignKey: "correo",
+  as: "id_president",
 });
 
 Comision.hasMany(Representante, {
-  foreignKey: "id_secretary",
+  foreignKey: "correo",
+  as: "id_secretary",
 });
-Representante.belongsTo(Comision, {
-  foreignKey: "id_secretary",
+Representante.hasOne(Comision, {
+  foreignKey: "correo",
+  as: "id_secretary",
 });
+
 export default Comision;

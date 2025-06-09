@@ -47,23 +47,36 @@ export const change_status_voting = (
 
 export const execute_vote = async (
   data: ControllerData,
-  callback: CallbackFunction
+  callback: CallbackFunction | null,
+  flag?: any
 ) => {
   const { id } = data;
-  const res = await CRUDOperations(
-    "PUT",
-    `voting/execute-vote/${id}`,
-    data,
-    callback
-  );
 
-  if (res) {
+  let res = undefined;
+  if (!flag) {
+    res = await CRUDOperations(
+      "PUT",
+      `voting/execute-vote/${id}`,
+      data,
+      callback
+    );
+  }
+
+  if (res || flag) {
     const socket = sockets.get(data.identity);
 
-    const monitor = await show_monitor(data, null);
+    let monitor = flag;
+    //Comprueba que no ha sido enviado desde show_monitor
+    if (!flag) {
+      monitor = await show_monitor(data, null);
+    }
 
     if (!monitor) {
       return;
+    }
+
+    if (!res) {
+      res = monitor;
     }
 
     const country = await deputy_country(data, null);
@@ -76,24 +89,24 @@ export const execute_vote = async (
     }
 
     for (let c of res.auxData) {
-      console.log("Emitiendo", c);
       socket?.io.to(c).emit("executed-votes", monitor);
     }
   }
 };
 
-export const show_monitor = (
+export const show_monitor = async (
   data: ControllerData,
   callback: CallbackFunction | null
 ) => {
   const { id } = data;
-  const list_monitor = CRUDOperations(
+  const list_monitor = await CRUDOperations(
     "PATCH",
     `voting/monitor/${id}`,
     data,
     callback
   );
 
+  await execute_vote(data, callback, list_monitor);
   return list_monitor;
 };
 

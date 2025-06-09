@@ -36,7 +36,7 @@ export class VotingService {
         nombre: voting_name,
         description: voting_description,
         id_comision: commission,
-        resultado: "No iniciada",
+        resultado: "Programada",
         estado: "Cerrada",
       });
 
@@ -50,7 +50,7 @@ export class VotingService {
         against: 0,
         in_favour: 0,
         id_voting: votacion.id_votacion,
-        result: "No iniciada",
+        result: "Programada",
         state: "Cerrada",
       };
     } catch (error: any) {
@@ -154,6 +154,9 @@ export class VotingService {
         }
 
         const comision = await Comision.findByPk(elem.id_comision);
+        const countCountries = await Comision_Pais.count({
+          where: { id_comision: elem.id_comision },
+        });
 
         if (!comision) {
           throw new Error("Bad, Error");
@@ -168,7 +171,14 @@ export class VotingService {
           in_favour: elem.a_favor || 0,
           against: elem.en_contra || 0,
           abstention: elem.abstencion || 0,
+          totalVotes:
+            (elem.abstencion || 0) +
+            (elem.en_contra || 0) +
+            (elem.a_favor || 0),
           state: elem.estado,
+          totalParticipants: countCountries,
+          date: elem.fecha,
+          hour: elem.hora,
         };
 
         result.add(adding);
@@ -201,7 +211,7 @@ export class VotingService {
         estado = "Abierta";
         await votacion.update({
           estado,
-          resultado: "En proceso",
+          resultado: "Activa",
           fecha: getFechaCuba(),
         });
       } else {
@@ -275,7 +285,7 @@ export class VotingService {
         } else {
           v = "de Abstención";
         }
-        throw new Error(`Voto ${v} ejecutado`);
+        throw new Error(`Voto ${v} ejercido previamente`);
       }
 
       const pais = await Pais.findByPk(country);
@@ -337,6 +347,10 @@ export class VotingService {
         return pais.nombre;
       });
 
+      if (paises.length === aFavor + enContra + abstencion) {
+        this.changeStatusVotingService(id);
+      }
+
       const response = new GeneralResponse(
         true,
         `Voto ${vote} ejecutado por ${pais?.nombre}`,
@@ -352,9 +366,14 @@ export class VotingService {
     }
   }
 
-  async showMonitorService(
-    id: number
-  ): Promise<{ votes: IVote[]; success: boolean }> {
+  async showMonitorService(id: number): Promise<{
+    votes: IVote[];
+    success: boolean;
+    in_favour: number;
+    against: number;
+    abstention: number;
+    auxData?: any;
+  }> {
     try {
       const votacion = await Votacion.findByPk(id);
 
@@ -370,6 +389,9 @@ export class VotingService {
         order: [[Pais, "nombre", "ASC"]],
       });
 
+      let aFavor = 0;
+      let enContra = 0;
+      let abstencion = 0;
       const lista = new List<IVote>();
       for (let p of pais) {
         const v = await Voto.findOne({
@@ -382,10 +404,13 @@ export class VotingService {
           vote = -1;
         } else if (v.a_favor) {
           vote = 1;
+          aFavor++;
         } else if (v.en_contra) {
           vote = 0;
+          enContra++;
         } else if (v.abstencion) {
           vote = 2;
+          abstencion++;
         } else {
           vote = -1;
         }
@@ -404,8 +429,31 @@ export class VotingService {
         lista.add(resultado);
       }
 
+      const paises = await Comision_Pais.findAll({
+        where: {
+          id_comision: votacion.id_comision,
+        },
+      });
+
+      const countries = paises.map(async (p) => {
+        const pais = await Pais.findByPk(p.id_pais);
+        if (!pais) {
+          throw new Error("BAD ERROR, found not country");
+        }
+        return pais.nombre;
+      });
+
+      const auxData = await Promise.all(countries);
+
       // 5. Retornar respuesta
-      return { votes: lista.elements, success: true };
+      return {
+        votes: lista.elements,
+        success: true,
+        in_favour: aFavor,
+        against: enContra,
+        abstention: abstencion,
+        auxData,
+      };
     } catch (error: any) {
       console.error("Error en servicio de monitarizacion de votos:", error);
 

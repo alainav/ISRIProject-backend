@@ -12,7 +12,7 @@ export class ListDeputyController extends GeneralError {
       const response = await this.listdeputies.listAllDeputiesService(
         Number(page?.toString())
       );
-      console.log(response);
+
       const paginated = response.paginated.paginated;
       res.json({
         success: true,

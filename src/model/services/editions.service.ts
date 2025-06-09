@@ -48,7 +48,7 @@ export class EditionService {
       await commissionServices.registerCommissionService({
         countries: [0],
         edition: edition.id_edicion,
-        name: "Asamblea General",
+        name: `Asamblea General (${edition.id_edicion})`,
         president,
         secretary,
       });
@@ -109,7 +109,7 @@ export class EditionService {
         const commission = await Comision.findOne({
           where: {
             id_edicion: edition.id_edicion,
-            nombre: { [Op.iRegexp]: "Asamblea General" },
+            nombre: `Asamblea General (${edition.id_edicion})`,
           },
         });
 
@@ -241,7 +241,7 @@ class PrepareListsEditions {
     const commission = await Comision.findOne({
       where: {
         id_edicion: edition.id_edicion,
-        nombre: { [Op.iRegexp]: "Asamblea General" },
+        nombre: `Asamblea General (${edition.id_edicion})`,
       },
     });
 

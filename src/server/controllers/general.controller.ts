@@ -69,7 +69,6 @@ export class SocketsPersonalizados implements CustomSocket {
 
 let actualSocket: Socket;
 let actualIO: Server;
-let count: number = 0;
 // Tipar los manejadores de eventos
 type EventHandler = (this: Socket, ...args: any[]) => void;
 const EVENT_HANDLERS: Record<string, EventHandler> = {
@@ -163,8 +162,6 @@ const generalController = (socket: Socket, io: Server): void => {
 
   // Limpieza de sockets inactivos
   const inactivityInterval = setInterval(() => {
-    count++;
-    console.log("REVISANDO", count);
     sockets.forEach((socketObj, key) => {
       if (socketObj.timeDisconnected > 300000) {
         sockets.delete(key);

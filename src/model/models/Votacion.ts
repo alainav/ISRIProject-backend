@@ -14,11 +14,11 @@ class Votacion extends Model<
   "nombre": string;
   "description": string;
   "resultado":
-    | "No iniciada"
+    | "Programada"
     | "Aprobada"
     | "Denegada"
     | "Sin Desición"
-    | "En proceso";
+    | "Activa";
   "id_comision": number;
   "abstencion"?: number;
   "en_contra"?: number;
