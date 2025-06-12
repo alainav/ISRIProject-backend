@@ -37,6 +37,16 @@ const verifyVotingOperation = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
+
+  if (!id || id === "undefined") {
+    const response = new GeneralResponse(
+      false,
+      `Operación denegada. El identificador es obligatorio`
+    );
+    res.status(400).json(response);
+    return;
+  }
+
   const voting = await Votacion.findByPk(id);
 
   if (!voting) {

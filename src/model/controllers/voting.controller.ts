@@ -34,6 +34,7 @@ export class VotingControllers extends GeneralError {
   deleteController = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+
       const response = await this.votingService.deleteVotingService(
         Number.parseInt(id)
       );

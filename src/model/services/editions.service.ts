@@ -17,6 +17,7 @@ import { GeneralPaginated } from "../models/estandar/GeneralPaginated.js";
 import Representante from "../models/Representante.js";
 import { CommissionServices } from "./commission.service.js";
 import { sequelize } from "../config/databaseConection.js";
+import moment from "moment";
 
 export class EditionService {
   async registerEditionService(
@@ -53,14 +54,11 @@ export class EditionService {
         secretary,
       });
 
+      const exitEdition = await new PrepareListsEditions().prepareUnique(
+        edition
+      );
       return {
-        id_edition: edition.id_edicion,
-        duration: edition.duracion,
-        end_date: edition.f_fin,
-        initial_date: edition.f_inicio,
-        name: edition.nombre,
-        president,
-        secretary,
+        ...exitEdition,
         success: true,
       };
     } catch (error: any) {
@@ -259,7 +257,7 @@ class PrepareListsEditions {
       id_edition: edition.id_edicion,
       name: edition.nombre,
       initial_date: edition.f_inicio,
-      end_date: edition.f_fin,
+      end_date: moment(edition.f_fin, "YYYY/MM/DD").format("DD-MM-YYYY"),
       duration: edition.duracion,
       success: true,
       president: president
