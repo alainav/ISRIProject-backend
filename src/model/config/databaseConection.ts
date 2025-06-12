@@ -20,28 +20,27 @@ interface CustomSequelizeOptions extends Options {
  * Instancia de Sequelize configurada para conexión con PostgreSQL
  * @type {Sequelize}
  */
-export const sequelize = new Sequelize(
-  "nations_model_db",
-  "root",
-  "root",
-  {
-    dialect: "postgres",
-    protocol: "postgres",
-    host: "localhost",
-    logging: false,
-    dialectModule: pg,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
+export const sequelize = new Sequelize({
+  dialect: "postgres",
+  host: "dpg-d15lqpbuibrs73978nrg-a.oregon-postgres.render.com",
+  database: "nations_model_db",
+  username: "nations_model_db_user",
+  password: "OmxLPuRMUN8ddn732tynJy02obI9gV0Y",
+  port: 5432, // Puerto por defecto de PostgreSQL
+  dialectOptions: {
+    ssl: {
+      require: true, // Render PostgreSQL requiere SSL
+      rejectUnauthorized: false, // Necesario para conexiones SSL en Render
     },
-    retry: {
-      max: 3,
-      match: ["SequelizeDatabaseError: deadlock detected", /Deadlock/i],
-    },
-  } as CustomSequelizeOptions // Type assertion para opciones personalizadas
-);
+  },
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
+  logging: false, // Desactiva los logs de SQL en producción
+});
 
 /**
  * Establece conexión con la base de datos y sincroniza modelos
