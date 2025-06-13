@@ -22,11 +22,11 @@ interface CustomSequelizeOptions extends Options {
  */
 export const sequelize = new Sequelize({
   dialect: "postgres",
-  host: "dpg-d15lqpbuibrs73978nrg-a.oregon-postgres.render.com",
-  database: "nations_model_db",
-  username: "nations_model_db_user",
-  password: "OmxLPuRMUN8ddn732tynJy02obI9gV0Y",
-  port: 5432, // Puerto por defecto de PostgreSQL
+  host: "postgresql-tecnologia.alwaysdata.net",
+  database: "tecnologia_nations_model_db",
+  username: "tecnologia_root",
+  password: "114427salvador",
+  //port: 5432, // Puerto por defecto de PostgreSQL
   dialectOptions: {
     ssl: {
       require: true, // Render PostgreSQL requiere SSL
