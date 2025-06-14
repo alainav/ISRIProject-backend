@@ -223,7 +223,19 @@ export class VotingService {
           | "Sin Desición"
           | "En proceso";
 
-        const { aFavor, enContra, abstencion } = await this.contarVotos(id);
+        let { aFavor, enContra, abstencion } = await this.contarVotos(id);
+
+        const totalPaises = await Comision_Pais.count({
+          where: { id_comision: votacion.id_comision },
+        });
+
+        abstencion = totalPaises - (aFavor + enContra + abstencion);
+
+        await votacion.update({
+          a_favor: aFavor,
+          en_contra: enContra,
+          abstencion: abstencion,
+        });
 
         if (aFavor > enContra && aFavor > abstencion) {
           resultado = "Aprobada";

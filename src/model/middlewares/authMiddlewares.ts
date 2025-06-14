@@ -188,8 +188,6 @@ const verifyDeputyByToken = async (
     return;
   }
 
-  const deputy = await Representante.findOne({ where: { usuario: userName } });
-
   if (roleName !== "Representante") {
     const response = new GeneralResponse(
       false,
@@ -198,6 +196,8 @@ const verifyDeputyByToken = async (
     res.status(400).json(response);
     return;
   }
+
+  const deputy = await Representante.findOne({ where: { usuario: userName } });
 
   req.body.country = deputy?.id_pais;
 
