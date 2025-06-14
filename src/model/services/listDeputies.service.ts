@@ -89,18 +89,23 @@ export class ListDeputyService {
   ): Promise<{ deputies: IDeputy[]; paginated: IPaginated }> => {
     const offset = calcularOffset(page, 10);
 
-    const rol = await Rol.findOne({
+    const rol = await Rol.findAll({
       where: { nombre: { [Op.in]: roleName } },
     });
     if (!rol) {
       throw new Error(`No se ha creado el rol ${roleName}`);
     }
+
     const onlyDeputies = await Representante.findAndCountAll({
       offset,
       limit: 10,
       where: {
         estado: true,
-        id_rol: rol.id_rol,
+        id_rol: {
+          [Op.in]: rol.map((e) => {
+            return e.id_rol;
+          }),
+        },
       },
     });
 
