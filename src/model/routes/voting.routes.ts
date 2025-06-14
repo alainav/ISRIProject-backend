@@ -11,14 +11,14 @@ export const createVotingRoutes = (): Router => {
 
   router.post(
     "/register",
-    [authValidators.verifyAccessByToken],
+    [authValidators.verifyAccessByCommission],
     controller.registerController
   );
 
   router.put(
     "/update/:id",
     [
-      authValidators.verifyAccessByToken,
+      authValidators.verifyAccessByCommission,
       generalMiddlewares.verifyVotingOperation,
     ],
     controller.updateController
@@ -27,7 +27,7 @@ export const createVotingRoutes = (): Router => {
   router.delete(
     "/delete/:id",
     [
-      authValidators.verifyAccessByToken,
+      authValidators.verifyAccessByCommission,
       generalMiddlewares.verifyVotingOperation,
     ],
     controller.deleteController
@@ -36,7 +36,7 @@ export const createVotingRoutes = (): Router => {
   router.put(
     "/change-status/:id",
     [
-      authValidators.verifyAccessByToken,
+      authValidators.verifyAccessByCommission,
       generalMiddlewares.verifyVotingOperation,
     ],
     controller.changeStatusController

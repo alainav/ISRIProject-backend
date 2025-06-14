@@ -5,11 +5,7 @@ import Pais from "../models/Pais.js";
 import GeneralResponse from "../models/estandar/GeneralResponse.js";
 import { verifyToken } from "../utils/generateJWT.js";
 
-const rolesInvalidos = [
-  "Representante",
-  "Presidente de Comisión",
-  "Secretario de Comisión",
-];
+const rolesInvalidos = ["Representante", "Miembro Observador"];
 const verifyCorreoUnique = async (
   req: Request,
   res: Response,
@@ -153,6 +149,50 @@ const verifyAccessByToken = async (
   return next();
 };
 
+const verifyAccessByCommission = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { token, deputyUserName } = req.body;
+
+  const { roleName, userName, success, message } = verifyToken(token);
+  if (!success) {
+    res.status(400).json({ success, message });
+    return;
+  }
+
+  req.body.decodedToken = {
+    userName,
+    roleName,
+  };
+
+  if (!roleName) {
+    res.status(400).json({ success, message });
+    return;
+  }
+
+  if (deputyUserName && userName && roleName) {
+    if (rolesInvalidos.includes(roleName)) {
+      const response = new GeneralResponse(
+        false,
+        "Operación denegada. Privilegios Inválidos"
+      );
+      res.status(400).json(response);
+      return;
+    }
+  } else if (rolesInvalidos.includes(roleName)) {
+    const response = new GeneralResponse(
+      false,
+      "Operación denegada. Privilegios Inválidos"
+    );
+    res.status(400).json(response);
+    return;
+  }
+
+  return next();
+};
+
 const verifyAccessByTokenAndContinue = async (
   req: Request,
   res: Response,
@@ -252,6 +292,7 @@ export default {
   verifyIdDeputy,
   verifyAccessByToken,
   verifyDeputyByToken,
+  verifyAccessByCommission,
   verifyAccessByTokenAndContinue,
   comprobateIdRole,
   comprobateIdCountry,
