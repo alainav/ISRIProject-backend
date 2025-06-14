@@ -96,9 +96,10 @@ export class AuthService {
         usuario: requestData.userName,
         correo: requestData.email,
         p_nombre: firstOfEachWordtoUpperCase(requestData.first_name),
-        s_nombre: requestData.second_name
-          ? firstOfEachWordtoUpperCase(requestData.second_name)
-          : null,
+        s_nombre:
+          requestData.second_name && requestData.second_name !== ""
+            ? firstOfEachWordtoUpperCase(requestData.second_name)
+            : null,
         p_apellido: firstOfEachWordtoUpperCase(requestData.first_surname),
         s_apellido: firstOfEachWordtoUpperCase(requestData.second_surname),
         c_acceso: codeAccess,
@@ -158,10 +159,16 @@ export class AuthService {
       } = data;
 
       if (name) {
-        (first_name = name.first_name),
-          (second_name = name.second_name),
-          (first_surname = name.first_surname),
-          (second_surname = name.second_surname);
+        (first_name = name.first_name ? name.first_name : first_name),
+          (data.second_name = name.second_name
+            ? name.second_name
+            : second_name),
+          (first_surname = name.first_surname
+            ? name.first_surname
+            : first_surname),
+          (second_surname = name.second_surname
+            ? name.second_surname
+            : second_surname);
       }
 
       // 1. Buscar entidades relacionadas

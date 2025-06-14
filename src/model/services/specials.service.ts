@@ -20,7 +20,7 @@ export class SpecialsServices {
     success: boolean;
   }> {
     try {
-      const offset = calcularOffset(page, 10);
+      const offset = calcularOffset(page, 50);
 
       let options = {};
       if (req.query.name) {
@@ -31,6 +31,8 @@ export class SpecialsServices {
         };
       }
       const pais = await Pais.findAndCountAll({
+        offset,
+        limit: 50,
         ...options,
       });
 
@@ -56,7 +58,7 @@ export class SpecialsServices {
         countries.add(country);
       }
 
-      const { totalPages, totalRecords } = calcularPaginas(pais.count, 10);
+      const { totalPages, totalRecords } = calcularPaginas(pais.count, 50);
       const paginated = new GeneralPaginated(totalPages, totalRecords, page);
 
       return {
