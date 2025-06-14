@@ -228,7 +228,7 @@ const verifyDeputyByToken = async (
     return;
   }
 
-  if (roleName !== "Representante") {
+  if (roleName !== "Representante" && roleName !== "Miembro Observador") {
     const response = new GeneralResponse(
       false,
       "Operación denegada. Privilegios Inválidos"
