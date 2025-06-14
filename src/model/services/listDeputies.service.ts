@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import { calcularOffset, calcularPaginas } from "../../utils/utils.js";
 import { IPaginated } from "../interfaces/IPaginated.js";
 import { GeneralDeputy } from "../models/estandar/GeneralDeputy.js";
@@ -46,41 +47,50 @@ export class ListDeputyService {
   async listOnlyDeputiesService(
     page: number = 1
   ): Promise<{ deputies: IDeputy[]; paginated: IPaginated }> {
-    return await this.findDeputies(page, "Representante");
+    return await this.findDeputies(page, [
+      "Representante",
+      "Miembro Observador",
+    ]);
   }
 
   async listOnlyCommissionPresidentsService(
     page: number = 1
   ): Promise<{ deputies: IDeputy[]; paginated: IPaginated }> {
-    return await this.findDeputies(page, "Presidente de Comisión");
+    return await this.findDeputies(page, [
+      "Presidente de Comisión",
+      "Presidente General",
+    ]);
   }
 
   async listOnlyCommissionSecretariesService(
     page: number = 1
   ): Promise<{ deputies: IDeputy[]; paginated: IPaginated }> {
-    return await this.findDeputies(page, "Secretario de Comisión");
+    return await this.findDeputies(page, [
+      "Secretario de Comisión",
+      "Secretario General",
+    ]);
   }
 
   async listOnlyGeneralPresidentsService(
     page: number = 1
   ): Promise<{ deputies: IDeputy[]; paginated: IPaginated }> {
-    return await this.findDeputies(page, "Presidente General");
+    return await this.findDeputies(page, ["Presidente General"]);
   }
 
   async listOnlyGeneralSecretariesService(
     page: number = 1
   ): Promise<{ deputies: IDeputy[]; paginated: IPaginated }> {
-    return await this.findDeputies(page, "Secretario General");
+    return await this.findDeputies(page, ["Secretario General"]);
   }
 
   private findDeputies = async (
     page: number = 1,
-    roleName: string
+    roleName: string[]
   ): Promise<{ deputies: IDeputy[]; paginated: IPaginated }> => {
     const offset = calcularOffset(page, 10);
 
     const rol = await Rol.findOne({
-      where: { nombre: roleName },
+      where: { nombre: { [Op.in]: roleName } },
     });
     if (!rol) {
       throw new Error(`No se ha creado el rol ${roleName}`);
