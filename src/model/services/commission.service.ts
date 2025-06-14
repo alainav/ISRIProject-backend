@@ -267,7 +267,7 @@ export class CommissionServices {
               {
                 id_comision: {
                   [Op.in]: comisiones.map((e) => {
-                    return e.id_pais;
+                    return e.id_comision;
                   }),
                 },
               },
