@@ -9,7 +9,7 @@ export class SpecialControllers extends GeneralError {
 
   listController = async (req: Request, res: Response) => {
     try {
-      const { page = 1 } = req.query;
+      const { page } = req.body;
       const response = await this.specialServices.listCountriesService(
         Number(page?.toString()),
         req

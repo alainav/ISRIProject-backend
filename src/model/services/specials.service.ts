@@ -59,6 +59,7 @@ export class SpecialsServices {
       }
 
       const { totalPages, totalRecords } = calcularPaginas(pais.count, 50);
+
       const paginated = new GeneralPaginated(totalPages, totalRecords, page);
 
       return {

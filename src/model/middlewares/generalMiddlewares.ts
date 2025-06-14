@@ -101,10 +101,6 @@ const verifyEditionOperation = async (
     return;
   }
 
-  console.log(
-    new Date(getFechaCubaText()).getTime() > new Date(edition.f_fin).getTime()
-  );
-
   if (
     new Date(getFechaCubaText()).getTime() > new Date(edition.f_fin).getTime()
   ) {
