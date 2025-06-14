@@ -9,17 +9,30 @@ import Rol from "../models/Rol.js";
 
 export class ListDeputyService {
   async listAllDeputiesService(
-    page: number = 1
+    page: number = 1,
+    roleName: string,
+    userName: string
   ): Promise<{ deputies: IDeputy[]; paginated: IPaginated }> {
     const offset = calcularOffset(page, 10);
 
-    const allDeputies = await Representante.findAndCountAll({
-      offset,
-      limit: 10,
-      /*where: {
+    let allDeputies;
+    if (roleName === "Administrador") {
+      allDeputies = await Representante.findAndCountAll({
+        offset,
+        limit: 10,
+        /*where: {
         estado: true,
       },*/
-    });
+      });
+    } else {
+      allDeputies = await Representante.findAndCountAll({
+        offset,
+        limit: 10,
+        where: {
+          usuario: userName,
+        },
+      });
+    }
 
     const preparer = new PrepareListsDeputies();
     await preparer.prepare(allDeputies.rows);

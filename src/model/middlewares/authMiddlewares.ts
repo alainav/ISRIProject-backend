@@ -5,7 +5,7 @@ import Pais from "../models/Pais.js";
 import GeneralResponse from "../models/estandar/GeneralResponse.js";
 import { verifyToken } from "../utils/generateJWT.js";
 
-const rolesInválidos = [
+const rolesInvalidos = [
   "Representante",
   "Presidente de Comisión",
   "Secretario de Comisión",
@@ -129,10 +129,10 @@ const verifyAccessByToken = async (
   };
 
   if (deputyUserName && userName && roleName) {
-    if (deputyUserName !== userName && rolesInválidos.includes(roleName)) {
+    if (deputyUserName !== userName && rolesInvalidos.includes(roleName)) {
       const response = new GeneralResponse(
         false,
-        "Operación denegada. Privilegios Ínvalidos"
+        "Operación denegada. Privilegios Inválidos"
       );
       res.status(400).json(response);
       return;
@@ -144,7 +144,7 @@ const verifyAccessByToken = async (
   ) {
     const response = new GeneralResponse(
       false,
-      "Operación denegada. Privilegios Ínvalidos"
+      "Operación denegada. Privilegios Inválidos"
     );
     res.status(400).json(response);
     return;

@@ -160,9 +160,10 @@ export class AuthService {
 
       if (name) {
         (first_name = name.first_name ? name.first_name : first_name),
-          (data.second_name = name.second_name
-            ? name.second_name
-            : second_name),
+          (second_name =
+            name.second_name || name.second_name === null
+              ? name.second_name
+              : second_name),
           (first_surname = name.first_surname
             ? name.first_surname
             : first_surname),
@@ -189,7 +190,7 @@ export class AuthService {
         p_nombre: firstOfEachWordtoUpperCase(first_name),
         s_nombre: second_name
           ? firstOfEachWordtoUpperCase(second_name)
-          : undefined,
+          : second_name,
         p_apellido: firstOfEachWordtoUpperCase(first_surname),
         s_apellido: firstOfEachWordtoUpperCase(second_surname),
         id_rol: role,
