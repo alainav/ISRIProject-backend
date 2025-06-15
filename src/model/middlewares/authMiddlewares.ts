@@ -124,7 +124,23 @@ const verifyAccessByToken = async (
     roleName,
   };
 
-  if (deputyUserName && userName && roleName) {
+  if (!roleName) {
+    const response = new GeneralResponse(
+      false,
+      "Operación denegada. Rol no encontrado"
+    );
+    res.status(400).json(response);
+    return;
+  }
+
+  if (rolesInvalidos.includes(roleName)) {
+    const response = new GeneralResponse(
+      false,
+      "Operación denegada. Privilegios Inválidos"
+    );
+    res.status(400).json(response);
+    return;
+  } else if (deputyUserName && userName && roleName) {
     if (deputyUserName !== userName && rolesInvalidos.includes(roleName)) {
       const response = new GeneralResponse(
         false,
