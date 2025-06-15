@@ -8,7 +8,7 @@ export class ListDeputyController extends GeneralError {
   }
   listAllDeputies = async (req: Request, res: Response) => {
     try {
-      const { page } = req.query;
+      const { page } = req.body;
       const { roleName, userName } = req.body.actualUser;
       const response = await this.listdeputies.listAllDeputiesService(
         Number(page?.toString()),

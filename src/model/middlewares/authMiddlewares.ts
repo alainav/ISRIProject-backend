@@ -162,6 +162,9 @@ const verifyAccessByToken = async (
     return;
   }
 
+  const { data } = req.body;
+  req.body.data = limpiarEspacios(data);
+
   return next();
 };
 
@@ -206,6 +209,9 @@ const verifyAccessByCommission = async (
     return;
   }
 
+  const { data } = req.body;
+  req.body.data = limpiarEspacios(data);
+
   return next();
 };
 
@@ -222,13 +228,29 @@ const verifyAccessByTokenAndContinue = async (
     return;
   }
 
+  const { data } = req.body;
+  req.body.data = limpiarEspacios(data);
+
   //Me da la información del usuario logueado
   req.body.actualUser = {
     roleName,
     userName,
     email,
   };
+
   return next();
+};
+
+const limpiarEspacios = (data: any) => {
+  for (let key in data) {
+    if (data.hasOwnProperty(key)) {
+      if (typeof data[key] === "string") {
+        data[key] = data[key].trim();
+      }
+    }
+  }
+
+  return data;
 };
 
 const verifyDeputyByToken = async (
@@ -256,6 +278,9 @@ const verifyDeputyByToken = async (
   const deputy = await Representante.findOne({ where: { usuario: userName } });
 
   req.body.country = deputy?.id_pais;
+
+  const { data } = req.body;
+  req.body.data = limpiarEspacios(data);
 
   return next();
 };
