@@ -53,6 +53,20 @@ export const delete_deputy = (
   const { userName } = data;
   CRUDOperations("DELETE", `deputy/delete/${userName}`, data, callback);
 };
+
+export const delete_permanent_deputy = (
+  data: ControllerData,
+  callback: CallbackFunction
+) => {
+  const { userName } = data;
+  CRUDOperations(
+    "DELETE",
+    `deputy/delete/permanent/${userName}`,
+    data,
+    callback
+  );
+};
+
 export const activate_deputy = (
   data: ControllerData,
   callback: CallbackFunction

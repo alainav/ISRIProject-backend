@@ -185,7 +185,7 @@ export class AuthService {
         );
       }
 
-      representante.update({
+      await representante.update({
         usuario: userName?.toLowerCase(),
         p_nombre: firstOfEachWordtoUpperCase(first_name),
         s_nombre: second_name
@@ -226,6 +226,38 @@ export class AuthService {
     }
   }
 
+  async deleteDeputyPermanentService(
+    userName: string
+  ): Promise<IGeneralResponse> {
+    try {
+      // 1. Buscar entidades relacionadas
+      const representante = await Representante.findOne({
+        where: {
+          usuario: userName,
+        },
+      });
+
+      if (!representante) {
+        throw new Error(
+          `El usuario ${userName} no se encuentra asociado a ningun representante`
+        );
+      }
+
+      await representante.destroy();
+
+      const response = new GeneralResponse(
+        true,
+        `Representante ${representante.p_nombre} ${representante.p_apellido} eliminado de forma permanente`
+      );
+      // 5. Retornar respuesta
+      return response.data;
+    } catch (error: any) {
+      console.error("Error en servicio de eliminación permanente:", error);
+
+      throw error;
+    }
+  }
+
   async deleteDeputyService(userName: string): Promise<IGeneralResponse> {
     try {
       // 1. Buscar entidades relacionadas
@@ -241,7 +273,7 @@ export class AuthService {
         );
       }
 
-      representante.update({
+      await representante.update({
         estado: false,
       });
 
@@ -270,7 +302,7 @@ export class AuthService {
       }
 
       const f_expiracion = addYears(getFechaCuba(), 1);
-      representante.update({
+      await representante.update({
         estado: true,
         f_expiracion,
       });

@@ -34,6 +34,13 @@ export const createAuthRoutes = (): Router => {
     [authValidators.verifyAccessByToken, authValidators.comprobateIdDeputy],
     controller.deleteController
   );
+
+  router.delete(
+    "/delete/permanent/:userName",
+    [authValidators.verifyAccessByToken, authValidators.comprobateIdDeputy],
+    controller.permanentDeleteController
+  );
+
   router.put(
     "/reactivate/:userName",
     [authValidators.comprobateIdDeputy, authValidators.verifyAccessByToken],

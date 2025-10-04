@@ -11,6 +11,7 @@ import {
   get_list_commissions_secretaries,
   get_list_general_presidents,
   get_list_general_secretaries,
+  delete_permanent_deputy,
 } from "./deputy.controller.js";
 
 import {
@@ -77,6 +78,7 @@ const EVENT_HANDLERS: Record<string, EventHandler> = {
   "create-deputy": create_deputy,
   "update-deputy": update_deputy,
   "delete-deputy": delete_deputy,
+  "delete-permanent-deputy": delete_permanent_deputy,
   "activate-deputy": activate_deputy,
   "list-all-deputies": list_all_deputies,
   "get-list-deputies": get_list_deputies,

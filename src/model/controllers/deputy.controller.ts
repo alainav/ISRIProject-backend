@@ -35,6 +35,17 @@ export class DeputyControllers extends GeneralError {
     }
   };
 
+  permanentDeleteController = async (req: Request, res: Response) => {
+    try {
+      const response = await this.authService.deleteDeputyPermanentService(
+        req.params.userName
+      );
+      res.status(response.success ? 200 : 500).json(response);
+    } catch (error: any) {
+      this.generalError(res, error.message);
+    }
+  };
+
   deleteController = async (req: Request, res: Response) => {
     try {
       const response = await this.authService.deleteDeputyService(
