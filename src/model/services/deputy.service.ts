@@ -193,6 +193,8 @@ export class AuthService {
           : second_name,
         p_apellido: firstOfEachWordtoUpperCase(first_surname),
         s_apellido: firstOfEachWordtoUpperCase(second_surname),
+        id_rol: role,
+        id_pais: country,
       });
 
       const token = await createToken(
