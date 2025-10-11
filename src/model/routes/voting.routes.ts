@@ -28,7 +28,7 @@ export const createVotingRoutes = (): Router => {
     "/delete/:id",
     [
       authValidators.verifyAccessByCommission,
-      generalMiddlewares.verifyVotingOperation,
+      //generalMiddlewares.verifyVotingOperation,
     ],
     controller.deleteController
   );

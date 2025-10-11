@@ -2,7 +2,7 @@ export interface IVoting {
   id_voting?: number;
   voting_name: string;
   description: string;
-  result: "Programada" | "Aprobada" | "Denegada" | "Sin Desición" | "Activa";
+  result: "Programada" | "Aprobada" | "Denegada" | "Sin Decisión" | "Activa";
   commission_name: string;
   in_favour?: number;
   against?: number;

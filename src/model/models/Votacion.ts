@@ -17,7 +17,7 @@ class Votacion extends Model<
     | "Programada"
     | "Aprobada"
     | "Denegada"
-    | "Sin Desición"
+    | "Sin Decisión"
     | "Activa";
   "id_comision": number;
   "abstencion"?: number;

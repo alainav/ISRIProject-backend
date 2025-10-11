@@ -131,8 +131,11 @@ export class VotingService {
 
       const representante = await Representante.findByPk(email);
 
+      if (!representante) {
+        throw new Error(`Correo ${email} no encontrado.`);
+      }
       const paises = await Comision_Pais.findAll({
-        where: { id_pais: representante?.id_pais },
+        where: { id_pais: representante.id_pais },
       });
 
       const votaciones = await Votacion.findAndCountAll({
@@ -220,7 +223,7 @@ export class VotingService {
           | "No iniciada"
           | "Aprobada"
           | "Denegada"
-          | "Sin Desición"
+          | "Sin Decisión"
           | "En proceso";
 
         let { aFavor, enContra, abstencion } = await this.contarVotos(id);
@@ -242,7 +245,7 @@ export class VotingService {
         } else if (enContra > aFavor && enContra > abstencion) {
           resultado = "Denegada";
         } else {
-          resultado = "Sin Desición";
+          resultado = "Sin Decisión";
         }
 
         await votacion.update({
